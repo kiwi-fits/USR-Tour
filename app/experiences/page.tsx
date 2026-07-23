@@ -6,10 +6,10 @@ import { Waves, Utensils, Camera, Compass, Clock, Users, Star, ArrowRight } from
 import { useData } from "@/lib/DataContext";
 
 const fadeUp = {
-  hidden: { opacity: 0, y: 40 },
+  hidden: { opacity: 0, y: 15 },
   visible: (i: number = 0) => ({
     opacity: 1, y: 0,
-    transition: { delay: i * 0.1, duration: 0.6, ease: [0.22, 1, 0.36, 1] },
+    transition: { delay: i * 0.05, duration: 0.6, ease: [0.16, 1, 0.3, 1] },
   }),
 };
 
@@ -60,9 +60,7 @@ export default function ExperiencesPage() {
               viewport={{ once: true, margin: "-60px" }}
               variants={fadeUp}
               custom={0}
-              className={`bg-white rounded-3xl shadow-card overflow-hidden grid grid-cols-1 lg:grid-cols-2 ${
-                i % 2 === 1 ? "lg:flex-row-reverse" : ""
-              }`}
+              className="bg-white rounded-3xl shadow-card overflow-hidden grid grid-cols-1 lg:grid-cols-2"
             >
               {/* Image side */}
               <div className={`relative h-72 lg:h-auto min-h-[320px] img-zoom ${i % 2 === 1 ? "lg:order-2" : ""}`}>

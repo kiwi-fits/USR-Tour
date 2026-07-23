@@ -10,8 +10,8 @@ import { Suspense, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 
 const fadeUp = {
-  hidden: { opacity: 0, y: 40 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } },
+  hidden: { opacity: 0, y: 15 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] } },
 };
 
 const steps = [
@@ -157,7 +157,7 @@ function BookingFormContent() {
 
               {/* Step 1: Package Selection */}
               {step === 1 && (
-                <motion.div key="step1" initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -40 }} transition={{ duration: 0.4 }}>
+                <motion.div key="step1" initial={{ opacity: 0, x: 15 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -15 }} transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}>
                   <div className="bg-white rounded-3xl shadow-card p-8">
                     <h2 className="font-display font-black text-navy text-2xl mb-6">Choose Your Package</h2>
                     <div className="space-y-4">
@@ -208,7 +208,7 @@ function BookingFormContent() {
 
               {/* Step 2: Dates */}
               {step === 2 && (
-                <motion.div key="step2" initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -40 }} transition={{ duration: 0.4 }}>
+                <motion.div key="step2" initial={{ opacity: 0, x: 15 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -15 }} transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}>
                   <div className="bg-white rounded-3xl shadow-card p-8">
                     <h2 className="font-display font-black text-navy text-2xl mb-6">Select Your Dates</h2>
                     <div className="space-y-5">
@@ -254,7 +254,7 @@ function BookingFormContent() {
 
               {/* Step 3: Personal Details */}
               {step === 3 && (
-                <motion.div key="step3" initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -40 }} transition={{ duration: 0.4 }}>
+                <motion.div key="step3" initial={{ opacity: 0, x: 15 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -15 }} transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}>
                   <div className="bg-white rounded-3xl shadow-card p-8">
                     <h2 className="font-display font-black text-navy text-2xl mb-6">Personal Details</h2>
                     <div className="space-y-5">
@@ -306,7 +306,7 @@ function BookingFormContent() {
 
               {/* Step 4: Confirm */}
               {step === 4 && (
-                <motion.div key="step4" initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -40 }} transition={{ duration: 0.4 }}>
+                <motion.div key="step4" initial={{ opacity: 0, x: 15 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -15 }} transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}>
                   <div className="bg-white rounded-3xl shadow-card p-8">
                     <h2 className="font-display font-black text-navy text-2xl mb-6">Review & Confirm</h2>
                     {pkg && (

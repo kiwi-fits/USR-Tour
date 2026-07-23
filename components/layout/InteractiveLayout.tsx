@@ -40,47 +40,62 @@ export default function InteractiveLayout({ children }: { children: React.ReactN
         {loading && (
           <motion.div
             initial={{ opacity: 1 }}
-            exit={{ opacity: 0, transition: { duration: 0.4, ease: "easeInOut" } }}
-            className="fixed inset-0 z-[999] bg-gradient-to-br from-navy to-ocean-800 flex flex-col items-center justify-center text-white"
+            exit={{ 
+              opacity: 0, 
+              transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] } 
+            }}
+            className="fixed inset-0 z-[999] bg-[#03045E] flex flex-col items-center justify-center text-white"
           >
             <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ duration: 0.4, ease: "easeOut" }}
+              initial={{ opacity: 0, y: 20, filter: "blur(8px)" }}
+              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+              transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
               className="flex flex-col items-center gap-3 relative z-10"
             >
-              <span className="font-display font-black text-4xl md:text-5xl tracking-wider uppercase gradient-india">
+              <span className="font-display font-black text-4xl md:text-5xl tracking-[0.2em] uppercase text-white">
                 USR TOURS
+              </span>
+              <span className="text-teal text-xs tracking-[0.3em] uppercase font-semibold">
+                Jaffna Tourism
               </span>
             </motion.div>
             
-            <div className="w-48 h-1 bg-white/10 rounded-full mt-8 overflow-hidden relative z-10">
+            <div className="w-32 h-[2px] bg-white/10 rounded-full mt-8 overflow-hidden relative z-10">
               <motion.div
-                initial={{ left: "-100%" }}
-                animate={{ left: "100%" }}
-                transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                className="absolute top-0 bottom-0 w-1/3 bg-teal-DEFAULT rounded-full"
+                initial={{ width: "0%" }}
+                animate={{ width: "100%" }}
+                transition={{ duration: 0.4, ease: "easeInOut" }}
+                className="h-full bg-teal"
               />
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Main Content wrapper */}
-      <div className={loading ? "max-h-screen overflow-hidden" : ""}>
-        {children}
-      </div>
+      {/* Main Content wrapper with Page Route Transition */}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={pathname}
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -15 }}
+          transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+          className={loading ? "max-h-screen overflow-hidden" : "min-h-screen"}
+        >
+          {children}
+        </motion.div>
+      </AnimatePresence>
 
       {/* 2. Back to Top Button */}
       <AnimatePresence>
         {showScroll && (
           <motion.button
-            initial={{ opacity: 0, scale: 0.5, y: 20 }}
+            initial={{ opacity: 0, scale: 0.8, y: 10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.5, y: 20 }}
+            exit={{ opacity: 0, scale: 0.8, y: 10 }}
             onClick={scrollToTop}
             id="back-to-top-btn"
-            className="fixed bottom-6 right-6 z-40 w-12 h-12 rounded-full bg-gradient-to-r from-teal-DEFAULT to-ocean-500 text-white flex items-center justify-center shadow-ocean hover:scale-110 active:scale-95 transition-transform"
+            className="fixed bottom-6 right-6 z-40 w-12 h-12 rounded-full bg-gradient-to-r from-teal to-ocean-500 text-white flex items-center justify-center shadow-lg hover:scale-105 active:scale-95 transition-transform"
             aria-label="Scroll back to top"
           >
             <ChevronUp className="w-6 h-6" />

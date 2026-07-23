@@ -7,10 +7,10 @@ import { MapPin, Star, Clock, ArrowRight, Filter } from "lucide-react";
 import { useData } from "@/lib/DataContext";
 
 const fadeUp = {
-  hidden: { opacity: 0, y: 40 },
+  hidden: { opacity: 0, y: 15 },
   visible: (i: number = 0) => ({
     opacity: 1, y: 0,
-    transition: { delay: i * 0.1, duration: 0.6, ease: [0.22, 1, 0.36, 1] },
+    transition: { delay: i * 0.05, duration: 0.6, ease: [0.16, 1, 0.3, 1] },
   }),
 };
 
@@ -89,10 +89,10 @@ export default function DestinationsPage() {
                 <motion.div
                   key={d.id}
                   layout
-                  initial={{ opacity: 0, scale: 0.95 }}
+                  initial={{ opacity: 0, scale: 0.98 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  transition={{ duration: 0.4, delay: i * 0.07 }}
+                  exit={{ opacity: 0, scale: 0.98 }}
+                  transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
                   className="bg-white rounded-2xl overflow-hidden shadow-card card-hover group"
                 >
                   <div className="relative h-56 img-zoom">

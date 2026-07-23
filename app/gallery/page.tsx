@@ -6,10 +6,10 @@ import { X, ZoomIn } from "lucide-react";
 import { useData, GalleryItem } from "@/lib/DataContext";
 
 const fadeUp = {
-  hidden: { opacity: 0, y: 30 },
+  hidden: { opacity: 0, y: 15 },
   visible: (i: number = 0) => ({
     opacity: 1, y: 0,
-    transition: { delay: i * 0.07, duration: 0.5, ease: [0.22, 1, 0.36, 1] },
+    transition: { delay: i * 0.05, duration: 0.6, ease: [0.16, 1, 0.3, 1] },
   }),
 };
 
@@ -77,10 +77,10 @@ export default function GalleryPage() {
                 <motion.div
                   key={photo.id}
                   layout
-                  initial={{ opacity: 0, scale: 0.9 }}
+                  initial={{ opacity: 0, scale: 0.98 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.9 }}
-                  transition={{ duration: 0.35, delay: i * 0.04 }}
+                  exit={{ opacity: 0, scale: 0.98 }}
+                  transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
                   onClick={() => setLightbox(photo)}
                   className={`relative rounded-2xl overflow-hidden cursor-pointer group img-zoom ${photo.span}`}
                 >
@@ -111,10 +111,10 @@ export default function GalleryPage() {
             onClick={() => setLightbox(null)}
           >
             <motion.div
-              initial={{ scale: 0.85, opacity: 0 }}
+              initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.85, opacity: 0 }}
-              transition={{ type: "spring", damping: 25 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
               className="relative max-w-4xl w-full max-h-[85vh] rounded-3xl overflow-hidden shadow-2xl"
               onClick={(e) => e.stopPropagation()}
             >

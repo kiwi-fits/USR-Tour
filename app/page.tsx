@@ -11,11 +11,11 @@ import { useData } from "@/lib/DataContext";
 
 // ─── Fade-up animation variant ───────────────────────────────────────────────
 const fadeUp = {
-  hidden: { opacity: 0, y: 40 },
+  hidden: { opacity: 0, y: 15 },
   visible: (i: number = 0) => ({
     opacity: 1,
     y: 0,
-    transition: { delay: i * 0.08, duration: 0.4, ease: [0.22, 1, 0.36, 1] },
+    transition: { delay: i * 0.05, duration: 0.6, ease: [0.16, 1, 0.3, 1] },
   }),
 };
 
@@ -310,10 +310,10 @@ export default function Home() {
               {activeReviews.map((t, i) => (
                 <motion.div
                   key={`${t.name}-${currentIndex}-${i}`}
-                  initial={{ opacity: 0, y: 50 }}
+                  initial={{ opacity: 0, y: 15 }}
                   animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -50 }}
-                  transition={{ duration: 0.5, ease: "easeInOut" }}
+                  exit={{ opacity: 0, y: -15 }}
+                  transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
                   className="glass-premium p-8 card-hover flex flex-col justify-between"
                 >
                   <div>
