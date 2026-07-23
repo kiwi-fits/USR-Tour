@@ -52,21 +52,7 @@ const testimonialsPool = [
 
 export default function Home() {
   const { destinations } = useData();
-  const [currentIndex, setCurrentIndex] = useState(0);
-
-  // Auto-advance reviews every 3.5 seconds
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % testimonialsPool.length);
-    }, 3500);
-    return () => clearInterval(timer);
-  }, []);
-
-  const activeReviews = [
-    testimonialsPool[currentIndex % testimonialsPool.length],
-    testimonialsPool[(currentIndex + 1) % testimonialsPool.length],
-    testimonialsPool[(currentIndex + 2) % testimonialsPool.length],
-  ];
+  const featuredTestimonials = testimonialsPool.slice(0, 3);
 
   return (
     <>
@@ -77,14 +63,6 @@ export default function Home() {
           <Image src="/hero.png" alt="Jaffna coastline" fill priority className="object-cover" />
           <div className="absolute inset-0 bg-gradient-to-b from-navy/90 via-ocean-800/60 to-navy/95" />
         </div>
-
-        {/* Animated wave overlay */}
-        <div className="absolute bottom-0 left-0 w-[200%] overflow-hidden leading-[0] opacity-40">
-          <svg viewBox="0 0 1440 120" className="animate-wave" preserveAspectRatio="none">
-            <path fill="rgba(0,180,216,0.5)" d="M0,60 C240,100 480,20 720,60 C960,100 1200,20 1440,60 L1440,120 L0,120 Z" />
-          </svg>
-        </div>
-
         {/* Hero content */}
         <div className="relative z-10 container-custom text-center pt-24 pb-16">
           <motion.div initial="hidden" animate="visible" className="flex flex-col items-center">
@@ -121,12 +99,6 @@ export default function Home() {
               ))}
             </motion.div>
           </motion.div>
-        </div>
-
-        {/* Scroll hint */}
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 text-white/50">
-          <span className="text-xs font-outfit tracking-widest uppercase">Scroll</span>
-          <ChevronDown className="w-4 h-4 animate-bounce" />
         </div>
       </section>
 
@@ -287,73 +259,40 @@ export default function Home() {
               </motion.h2>
             </motion.div>
 
-            <div className="flex items-center gap-3 mt-4 md:mt-0">
-              <button
-                onClick={() => setCurrentIndex((prev) => (prev - 1 + testimonialsPool.length) % testimonialsPool.length)}
-                className="w-10 h-10 rounded-full bg-white shadow-card border border-teal-lighter flex items-center justify-center text-navy hover:bg-teal-DEFAULT hover:text-white transition-all"
-                title="Previous Review"
-              >
-                ‹
-              </button>
-              <button
-                onClick={() => setCurrentIndex((prev) => (prev + 1) % testimonialsPool.length)}
-                className="w-10 h-10 rounded-full bg-white shadow-card border border-teal-lighter flex items-center justify-center text-navy hover:bg-teal-DEFAULT hover:text-white transition-all"
-                title="Next Review"
-              >
-                ›
-              </button>
-            </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 min-h-[260px]">
-            <AnimatePresence mode="popLayout">
-              {activeReviews.map((t, i) => (
-                <motion.div
-                  key={`${t.name}-${currentIndex}-${i}`}
-                  initial={{ opacity: 0, y: 15 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -15 }}
-                  transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-                  className="glass-premium p-8 card-hover flex flex-col justify-between"
-                >
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {featuredTestimonials.map((t, i) => (
+              <motion.div
+                key={t.name}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, margin: "-55px" }}
+                variants={fadeUp}
+                custom={i}
+                className="glass-premium p-8 card-hover flex flex-col justify-between"
+              >
+                <div>
+                  <div className="flex gap-1 mb-4">
+                    {[...Array(t.stars)].map((_, j) => (
+                      <Star key={j} className="w-4 h-4 fill-sand text-sand" />
+                    ))}
+                  </div>
+                  <p className="text-gray-600 text-sm md:text-base leading-relaxed mb-6 italic">
+                    "{t.text}"
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-3 pt-4 border-t border-teal-lighter/40">
+                  <div className="w-10 h-10 rounded-full bg-ocean-gradient flex items-center justify-center text-white font-display font-bold text-sm shadow-sm shrink-0">
+                    {t.name[0]}
+                  </div>
                   <div>
-                    <div className="flex gap-1 mb-4">
-                      {[...Array(t.stars)].map((_, j) => (
-                        <Star key={j} className="w-4 h-4 fill-sand text-sand" />
-                      ))}
-                    </div>
-                    <p className="text-gray-600 text-sm md:text-base leading-relaxed mb-6 italic">
-                      "{t.text}"
-                    </p>
+                    <div className="font-display font-bold text-navy text-sm">{t.name}</div>
+                    <div className="text-teal-DEFAULT font-semibold text-xs">{t.country}</div>
                   </div>
-
-                  <div className="flex items-center gap-3 pt-4 border-t border-teal-lighter/40">
-                    <div className="w-10 h-10 rounded-full bg-ocean-gradient flex items-center justify-center text-white font-display font-bold text-sm shadow-sm shrink-0">
-                      {t.name[0]}
-                    </div>
-                    <div>
-                      <div className="font-display font-bold text-navy text-sm">{t.name}</div>
-                      <div className="text-teal-DEFAULT font-semibold text-xs">{t.country}</div>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-            </AnimatePresence>
-          </div>
-
-          {/* Progress Indicators */}
-          <div className="flex items-center justify-center gap-2 mt-8">
-            {testimonialsPool.map((_, idx) => (
-              <button
-                key={idx}
-                onClick={() => setCurrentIndex(idx)}
-                className={`h-2 rounded-full transition-all duration-500 ${
-                  idx === currentIndex % testimonialsPool.length
-                    ? "w-8 bg-teal-DEFAULT shadow-sm"
-                    : "w-2 bg-gray-200 hover:bg-gray-400"
-                }`}
-                title={`Go to review ${idx + 1}`}
-              />
+                </div>
+              </motion.div>
             ))}
           </div>
         </div>
