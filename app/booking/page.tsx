@@ -146,7 +146,7 @@ function BookingFormContent() {
                   </span>
                 </div>
                 {i < steps.length - 1 && (
-                  <div className={`w-12 sm:w-20 h-0.5 mx-2 sm:mx-4 transition-colors ${step > s.id ? "bg-coral" : "bg-gray-200"}`} />
+                  <div className={`flex-grow min-w-[16px] max-w-[80px] h-0.5 mx-1 sm:mx-4 transition-colors ${step > s.id ? "bg-coral" : "bg-gray-200"}`} />
                 )}
               </div>
             ))}

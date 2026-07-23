@@ -90,7 +90,7 @@ export default function Home() {
             </motion.div>
 
             {/* Stats strip */}
-            <motion.div variants={fadeUp} custom={4} className="w-full grid grid-cols-4 gap-2 md:gap-10 mt-10 md:mt-14 glass-premium rounded-[1.5rem] px-3 md:px-10 py-6 md:py-8">
+            <motion.div variants={fadeUp} custom={4} className="w-full grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-10 mt-10 md:mt-14 glass-premium rounded-[1.5rem] px-5 md:px-10 py-6 md:py-8">
               {stats.map((s) => (
                 <div key={s.label} className="text-center">
                   <div className="font-display font-black text-xl sm:text-2xl md:text-3xl text-white">{s.number}</div>

@@ -103,7 +103,7 @@ export default function Navbar() {
         
         {/* Drawer */}
         <div
-          className={`absolute top-0 right-0 bottom-0 w-[280px] bg-gradient-to-b from-navy to-ocean-dark border-l border-white/10 shadow-2xl transition-transform duration-400 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${
+          className={`absolute top-0 right-0 bottom-0 w-[280px] bg-gradient-to-b from-navy to-ocean-dark border-l border-white/10 shadow-2xl transition-transform duration-350 ease-[cubic-bezier(0.16,1,0.3,1)] ${
             mobileOpen ? "translate-x-0" : "translate-x-full"
           }`}
         >
