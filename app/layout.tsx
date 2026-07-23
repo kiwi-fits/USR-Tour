@@ -1,33 +1,28 @@
 import type { Metadata } from "next";
-import { Inter, Outfit } from "next/font/google";
+import { Manrope } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import LenisProvider from "@/components/providers/LenisProvider";
 import InteractiveLayout from "@/components/layout/InteractiveLayout";
+import { DataProvider } from "@/lib/DataContext";
 
-const inter = Inter({
+const manrope = Manrope({
   subsets: ["latin"],
-  variable: "--font-inter",
-  display: "swap",
-});
-
-const outfit = Outfit({
-  subsets: ["latin"],
-  variable: "--font-outfit",
+  variable: "--font-manrope",
   display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "USR Tours | Travel with us. Create memories.",
+  title: "USR Tours | Your Perfect Jaffna Getaway from India",
   description:
-    "Explore the breathtaking beaches, ancient temples, rich culture, and warm hospitality of Jaffna, Sri Lanka with USR Tours. Travel with us, create memories.",
+    "Explore the breathtaking beaches, ancient temples, rich Tamil culture, and warm hospitality of Jaffna, Sri Lanka. Just a short trip from India. Travel with USR Tours.",
   keywords:
-    "USR tours, Jaffna tourism, Sri Lanka travel, Casuarina beach, Jaffna fort, Nainativu temple, Delft island, Sri Lanka vacation, travel memories",
+    "Jaffna tours from India, Chennai to Jaffna, Sri Lanka travel, Tamil culture tours, Nallur Kandaswamy temple, Jaffna vacation packages, USR tours",
   openGraph: {
-    title: "USR Tours | Travel with us. Create memories.",
+    title: "USR Tours | Your Perfect Jaffna Getaway",
     description:
-      "Explore the breathtaking beaches, ancient temples, rich culture, and warm hospitality of Jaffna, Sri Lanka with USR Tours.",
+      "Explore the breathtaking beaches, ancient temples, and shared heritage of Jaffna, Sri Lanka with USR Tours.",
     type: "website",
     locale: "en_US",
   },
@@ -39,15 +34,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${inter.variable} ${outfit.variable}`}>
+    <html lang="en" className={`${manrope.variable}`}>
       <body className="antialiased">
-        <LenisProvider>
-          <InteractiveLayout>
-            <Navbar />
-            <main>{children}</main>
-            <Footer />
-          </InteractiveLayout>
-        </LenisProvider>
+        <DataProvider>
+          <LenisProvider>
+            <InteractiveLayout>
+              <Navbar />
+              <main>{children}</main>
+              <Footer />
+            </InteractiveLayout>
+          </LenisProvider>
+        </DataProvider>
       </body>
     </html>
   );

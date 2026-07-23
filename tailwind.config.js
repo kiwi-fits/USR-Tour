@@ -39,8 +39,8 @@ module.exports = {
         navy: "#03045E",
       },
       fontFamily: {
-        sans: ["var(--font-inter)", "Inter", "system-ui", "sans-serif"],
-        display: ["var(--font-outfit)", "Outfit", "sans-serif"],
+        sans: ["var(--font-manrope)", "Manrope", "system-ui", "sans-serif"],
+        display: ["var(--font-manrope)", "Manrope", "sans-serif"],
       },
       animation: {
         "wave": "wave 8s linear infinite",

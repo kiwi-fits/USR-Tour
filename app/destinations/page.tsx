@@ -4,47 +4,17 @@ import Image from "next/image";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { MapPin, Star, Clock, ArrowRight, Filter } from "lucide-react";
+import { useData } from "@/lib/DataContext";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 40 },
-  visible: (i = 0) => ({
+  visible: (i: number = 0) => ({
     opacity: 1, y: 0,
     transition: { delay: i * 0.1, duration: 0.6, ease: [0.22, 1, 0.36, 1] },
   }),
 };
 
-const destinations = [
-  {
-    id: 1, name: "Casuarina Beach", tag: "Beach", img: "/dest-casuarina.png",
-    rating: "4.9", distance: "14 km", duration: "Half Day",
-    desc: "One of the most beautiful beaches in Sri Lanka with crystal-clear shallow waters and casuarina trees lining the shore.",
-  },
-  {
-    id: 2, name: "Nainativu Island", tag: "Heritage", img: "/dest-nainativu.png",
-    rating: "4.8", distance: "45 km", duration: "Full Day",
-    desc: "A sacred island accessible by boat, home to the revered Nagapooshani Amman temple surrounded by turquoise sea.",
-  },
-  {
-    id: 3, name: "Jaffna Fort", tag: "History", img: "/dest-fort.png",
-    rating: "4.7", distance: "2 km", duration: "2-3 Hours",
-    desc: "A stunning Dutch colonial star-shaped fort surrounded by the ocean — one of the best-preserved forts in Asia.",
-  },
-  {
-    id: 4, name: "Delft Island", tag: "Nature", img: "/dest-delft.png",
-    rating: "4.9", distance: "60 km", duration: "Full Day",
-    desc: "A remote island with wild horses, ancient baobab trees, and pristine untouched beaches — a truly unique experience.",
-  },
-  {
-    id: 5, name: "Keerimalai Springs", tag: "Heritage", img: "/gal-lagoon.png",
-    rating: "4.6", distance: "28 km", duration: "2-3 Hours",
-    desc: "Natural freshwater springs on the ocean's edge, historically believed to have healing properties.",
-  },
-  {
-    id: 6, name: "Jaffna Lagoon", tag: "Nature", img: "/gal-lagoon.png",
-    rating: "4.8", distance: "5 km", duration: "Half Day",
-    desc: "A serene lagoon perfect for sunrise boat rides through mangrove corridors with spectacular birdlife.",
-  },
-];
+
 
 const tags = ["All", "Beach", "Heritage", "History", "Nature"];
 
@@ -56,6 +26,7 @@ const tagColors: Record<string, string> = {
 };
 
 export default function DestinationsPage() {
+  const { destinations } = useData();
   const [activeTag, setActiveTag] = useState("All");
 
   const filtered = activeTag === "All" ? destinations : destinations.filter((d) => d.tag === activeTag);

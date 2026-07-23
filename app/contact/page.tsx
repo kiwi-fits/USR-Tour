@@ -4,10 +4,11 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import { useForm } from "react-hook-form";
 import { Mail, Phone, MapPin, Clock, Send, CheckCircle } from "lucide-react";
+import { useData } from "@/lib/DataContext";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 40 },
-  visible: (i = 0) => ({
+  visible: (i: number = 0) => ({
     opacity: 1, y: 0,
     transition: { delay: i * 0.1, duration: 0.6, ease: [0.22, 1, 0.36, 1] },
   }),
@@ -21,16 +22,19 @@ type FormData = {
   message: string;
 };
 
-const contactInfo = [
-  { icon: Phone, label: "Phone", value: "+94 21 222 1234", href: "tel:+94212221234", color: "text-teal-DEFAULT bg-teal-lighter" },
-  { icon: Mail, label: "Email", value: "hello@discoverjaffna.lk", href: "mailto:hello@discoverjaffna.lk", color: "text-ocean-500 bg-blue-50" },
-  { icon: MapPin, label: "Address", value: "123 Beach Road, Jaffna, Sri Lanka", href: "#", color: "text-coral bg-rose-50" },
-  { icon: Clock, label: "Hours", value: "Mon–Sat: 8am – 6pm LKT", href: "#", color: "text-sand bg-orange-50" },
-];
+
 
 export default function ContactPage() {
+  const { contact } = useData();
   const [submitted, setSubmitted] = useState(false);
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormData>();
+
+  const contactInfo = [
+    { icon: Phone, label: "Phone", value: contact.phone, href: `tel:${contact.phone}`, color: "text-teal-DEFAULT bg-teal-lighter" },
+    { icon: Mail, label: "Email", value: contact.email, href: `mailto:${contact.email}`, color: "text-ocean-500 bg-blue-50" },
+    { icon: MapPin, label: "Address", value: contact.address, href: "#", color: "text-coral bg-rose-50" },
+    { icon: Clock, label: "Hours", value: contact.hours, href: "#", color: "text-sand bg-orange-50" },
+  ];
 
   const onSubmit = async (_data: FormData) => {
     await new Promise((r) => setTimeout(r, 1200));

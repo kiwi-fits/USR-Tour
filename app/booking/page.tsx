@@ -4,6 +4,7 @@ import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { useForm } from "react-hook-form";
 import { Check, ChevronRight, ChevronLeft, Calendar, Users, User, CreditCard, CheckCircle } from "lucide-react";
+import { useData } from "@/lib/DataContext";
 
 import { Suspense, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
@@ -12,12 +13,6 @@ const fadeUp = {
   hidden: { opacity: 0, y: 40 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } },
 };
-
-const packages = [
-  { id: "explorer", name: "Explorer", price: "$149", duration: "3 Days / 2 Nights", img: "/dest-casuarina.png" },
-  { id: "voyager", name: "Voyager", price: "$299", duration: "5 Days / 4 Nights", img: "/exp-sunset.png" },
-  { id: "prestige", name: "Prestige", price: "$599", duration: "7 Days / 6 Nights", img: "/pkg-premium.png" },
-];
 
 const steps = [
   { id: 1, label: "Package", icon: Calendar },
@@ -39,6 +34,7 @@ type BookingForm = {
 };
 
 function BookingFormContent() {
+  const { addBooking, packages } = useData();
   const searchParams = useSearchParams();
   const pkgParam = searchParams.get("package");
 
@@ -50,7 +46,7 @@ function BookingFormContent() {
     if (pkgParam && packages.some((p) => p.id === pkgParam.toLowerCase())) {
       setSelectedPackage(pkgParam.toLowerCase());
     }
-  }, [pkgParam]);
+  }, [pkgParam, packages]);
 
   const { register, handleSubmit, watch, formState: { errors } } = useForm<BookingForm>({
     defaultValues: { guests: 2 },
@@ -59,7 +55,19 @@ function BookingFormContent() {
   const formData = watch();
 
   const onSubmit = async () => {
-    await new Promise((r) => setTimeout(r, 1500));
+    await new Promise((r) => setTimeout(r, 1200));
+    const pkg = packages.find((p) => p.id === selectedPackage);
+    addBooking({
+      packageName: pkg ? `${pkg.name} (${pkg.duration})` : "Custom Tour",
+      packagePrice: pkg ? pkg.price : "$199",
+      fullName: [formData.firstName, formData.lastName].filter(Boolean).join(" ") || "Guest Customer",
+      email: formData.email || "",
+      phone: formData.phone || "",
+      country: formData.country || "India",
+      date: formData.startDate || new Date().toISOString().split("T")[0],
+      guests: formData.guests || 2,
+      status: "Confirmed",
+    });
     setConfirmed(true);
   };
 

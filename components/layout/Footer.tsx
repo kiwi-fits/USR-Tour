@@ -1,6 +1,8 @@
 "use client";
 import Link from "next/link";
-import { Waves, Mail, Phone, MapPin, Instagram, Facebook, Twitter, Youtube } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { Waves, Mail, Phone, MapPin, Instagram, Facebook, Twitter, Youtube, Lock } from "lucide-react";
+import { useData } from "@/lib/DataContext";
 
 const footerLinks = {
   explore: [
@@ -18,6 +20,13 @@ const footerLinks = {
 };
 
 export default function Footer() {
+  const { contact } = useData();
+  const pathname = usePathname();
+
+  if (pathname?.startsWith("/admin")) {
+    return null;
+  }
+
   return (
     <footer className="bg-navy text-white">
       {/* Wave top */}
@@ -31,17 +40,18 @@ export default function Footer() {
         </svg>
       </div>
 
-      <div className="container-custom py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
+      <div className="container-custom py-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {/* Brand */}
           <div className="lg:col-span-1">
-            <Link href="/" className="flex items-center gap-2 mb-5 group">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-teal-DEFAULT to-ocean-500 flex items-center justify-center">
-                <Waves className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <span className="font-display font-black text-white text-xl leading-none block uppercase tracking-wider">USR</span>
-                <span className="font-display font-bold text-teal-DEFAULT text-xs leading-none tracking-[0.25em] uppercase">Tours</span>
+            <Link href="/" className="flex items-center mb-5 group">
+              <div className="flex flex-col items-center">
+                <span className="font-display font-extrabold gradient-india text-3xl leading-none uppercase tracking-wider">
+                  USR
+                </span>
+                <div className="flex justify-between w-full font-display font-medium text-teal-DEFAULT text-[0.8rem] leading-none uppercase mt-1">
+                  <span>T</span><span>O</span><span>U</span><span>R</span><span>S</span>
+                </div>
               </div>
             </Link>
             <p className="text-white/60 text-sm leading-relaxed mb-4">
@@ -61,9 +71,9 @@ export default function Footer() {
                   key={label}
                   href={href}
                   aria-label={label}
-                  className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-teal-DEFAULT hover:scale-110 transition-all duration-300"
+                  className="ios-icon-box bg-white/10 border-white/20 text-white hover:bg-teal-DEFAULT hover:text-white transition-all duration-300 !w-10 !h-10"
                 >
-                  <Icon className="w-4 h-4 text-white" />
+                  <Icon className="w-4 h-4 stroke-[2]" />
                 </a>
               ))}
             </div>
@@ -104,21 +114,21 @@ export default function Footer() {
             <h3 className="font-display font-bold text-white text-lg mb-5">Contact</h3>
             <ul className="space-y-4">
               <li>
-                <a href="tel:+94212221234" className="flex items-start gap-3 text-white/60 hover:text-teal-DEFAULT transition-colors text-sm group">
+                <a href={`tel:${contact.phone}`} className="flex items-start gap-3 text-white/60 hover:text-teal-DEFAULT transition-colors text-sm group">
                   <Phone className="w-4 h-4 mt-0.5 text-teal-DEFAULT shrink-0" />
-                  +94 21 222 1234
+                  {contact.phone}
                 </a>
               </li>
               <li>
-                <a href="mailto:hello@discoverjaffna.lk" className="flex items-start gap-3 text-white/60 hover:text-teal-DEFAULT transition-colors text-sm group">
+                <a href={`mailto:${contact.email}`} className="flex items-start gap-3 text-white/60 hover:text-teal-DEFAULT transition-colors text-sm group">
                   <Mail className="w-4 h-4 mt-0.5 text-teal-DEFAULT shrink-0" />
-                  hello@discoverjaffna.lk
+                  {contact.email}
                 </a>
               </li>
               <li>
                 <div className="flex items-start gap-3 text-white/60 text-sm">
                   <MapPin className="w-4 h-4 mt-0.5 text-teal-DEFAULT shrink-0" />
-                  <span>123 Beach Road, Jaffna<br />Northern Province, Sri Lanka</span>
+                  <span>{contact.address}</span>
                 </div>
               </li>
             </ul>
@@ -126,14 +136,16 @@ export default function Footer() {
         </div>
 
         {/* Bottom bar */}
-        <div className="mt-14 pt-8 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4">
+        <div className="mt-8 pt-6 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-white/40 text-sm">
             © {new Date().getFullYear()} USR Tours. All rights reserved.
           </p>
-          <div className="flex gap-6">
+          <div className="flex gap-6 items-center">
             <a href="#" className="text-white/40 hover:text-white/70 text-sm transition-colors">Privacy Policy</a>
             <a href="#" className="text-white/40 hover:text-white/70 text-sm transition-colors">Terms of Service</a>
-            <a href="#" className="text-white/40 hover:text-white/70 text-sm transition-colors">Cookie Policy</a>
+            <Link href="/admin" className="text-teal-light/70 hover:text-teal-light text-sm font-semibold flex items-center gap-1 transition-colors">
+              <Lock className="w-3.5 h-3.5" /> Admin Panel
+            </Link>
           </div>
         </div>
       </div>

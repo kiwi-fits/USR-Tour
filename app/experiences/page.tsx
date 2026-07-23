@@ -3,75 +3,26 @@ import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { Waves, Utensils, Camera, Compass, Clock, Users, Star, ArrowRight } from "lucide-react";
+import { useData } from "@/lib/DataContext";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 40 },
-  visible: (i = 0) => ({
+  visible: (i: number = 0) => ({
     opacity: 1, y: 0,
     transition: { delay: i * 0.1, duration: 0.6, ease: [0.22, 1, 0.36, 1] },
   }),
 };
 
-const experiences = [
-  {
-    id: 1,
-    icon: Waves,
-    category: "Adventure",
-    title: "Water Sports & Snorkeling",
-    desc: "Dive into crystal-clear waters teeming with colorful coral and marine life. Kayak, snorkel, and paddleboard along Jaffna's stunning coast.",
-    img: "/exp-watersports.png",
-    duration: "4-6 Hours",
-    groupSize: "2-12 people",
-    rating: "4.9",
-    price: "From $35",
-    color: "from-teal-DEFAULT to-ocean-500",
-    highlights: ["Snorkeling gear included", "Expert guide", "Reef exploration", "Kayaking"],
-  },
-  {
-    id: 2,
-    icon: Camera,
-    category: "Culture",
-    title: "Sunset Island Cruise",
-    desc: "Sail the magical Palk Bay in a traditional wooden boat as the sun melts into the ocean horizon, painting the sky in breathtaking orange and pink.",
-    img: "/exp-sunset.png",
-    duration: "3 Hours",
-    groupSize: "2-8 people",
-    rating: "4.9",
-    price: "From $45",
-    color: "from-coral to-sand",
-    highlights: ["Traditional boat", "Sunset views", "Photography spots", "Refreshments"],
-  },
-  {
-    id: 3,
-    icon: Utensils,
-    category: "Food",
-    title: "Jaffna Food Trail",
-    desc: "Embark on a mouth-watering culinary journey through Jaffna's iconic street food, famous crab curry, string hoppers, and traditional sweets.",
-    img: "/exp-food.png",
-    duration: "3-4 Hours",
-    groupSize: "2-10 people",
-    rating: "4.8",
-    price: "From $28",
-    color: "from-sand to-coral",
-    highlights: ["8+ food stops", "Local chef guide", "Hands-on cooking", "Recipes included"],
-  },
-  {
-    id: 4,
-    icon: Compass,
-    category: "Heritage",
-    title: "Temple & Heritage Tour",
-    desc: "Journey through Jaffna's most sacred and historic sites — ancient Hindu temples, colonial-era buildings, and vibrant cultural landmarks.",
-    img: "/dest-nainativu.png",
-    duration: "Full Day",
-    groupSize: "2-15 people",
-    rating: "4.7",
-    price: "From $55",
-    color: "from-ocean-500 to-navy",
-    highlights: ["Nainativu by boat", "3 temples", "Fort visit", "Local historian guide"],
-  },
-];
+
+
+const categoryIcons: Record<string, any> = {
+  Adventure: Waves,
+  Food: Utensils,
+  Culture: Camera,
+};
 
 export default function ExperiencesPage() {
+  const { experiences } = useData();
   return (
     <>
       {/* Hero */}
@@ -119,7 +70,10 @@ export default function ExperiencesPage() {
                 <div className={`absolute inset-0 bg-gradient-to-br ${exp.color} opacity-30`} />
                 <div className="absolute top-5 left-5">
                   <span className={`badge bg-gradient-to-r ${exp.color} text-white border-0 shadow-lg`}>
-                    <exp.icon className="w-3.5 h-3.5" />
+                    {(() => {
+                      const IconComp = categoryIcons[exp.category] || Compass;
+                      return <IconComp className="w-3.5 h-3.5" />;
+                    })()}
                     {exp.category}
                   </span>
                 </div>

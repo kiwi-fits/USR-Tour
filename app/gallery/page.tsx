@@ -3,35 +3,24 @@ import { useState } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, ZoomIn } from "lucide-react";
+import { useData, GalleryItem } from "@/lib/DataContext";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
-  visible: (i = 0) => ({
+  visible: (i: number = 0) => ({
     opacity: 1, y: 0,
     transition: { delay: i * 0.07, duration: 0.5, ease: [0.22, 1, 0.36, 1] },
   }),
 };
 
-const photos = [
-  { id: 1, src: "/hero.png", alt: "Jaffna Coastline Aerial View", tag: "Beach", span: "col-span-2 row-span-2" },
-  { id: 2, src: "/dest-casuarina.png", alt: "Casuarina Beach", tag: "Beach", span: "" },
-  { id: 3, src: "/dest-nainativu.png", alt: "Nainativu Temple", tag: "Heritage", span: "" },
-  { id: 4, src: "/dest-fort.png", alt: "Jaffna Fort at Sunset", tag: "History", span: "col-span-2" },
-  { id: 5, src: "/dest-delft.png", alt: "Delft Island Wild Horses", tag: "Nature", span: "" },
-  { id: 6, src: "/exp-sunset.png", alt: "Sunset Boat Cruise", tag: "Experiences", span: "" },
-  { id: 7, src: "/exp-food.png", alt: "Jaffna Food Spread", tag: "Culture", span: "" },
-  { id: 8, src: "/exp-watersports.png", alt: "Water Sports", tag: "Adventure", span: "" },
-  { id: 9, src: "/gal-boats.png", alt: "Traditional Fishing Boats", tag: "Culture", span: "col-span-2" },
-  { id: 10, src: "/gal-dance.png", alt: "Cultural Dance Performance", tag: "Culture", span: "" },
-  { id: 11, src: "/gal-lagoon.png", alt: "Jaffna Lagoon Sunrise", tag: "Nature", span: "" },
-  { id: 12, src: "/gal-palmyra.png", alt: "Palmyra Trees Sunset", tag: "Nature", span: "" },
-];
+
 
 const tags = ["All", "Beach", "Heritage", "History", "Nature", "Culture", "Adventure", "Experiences"];
 
 export default function GalleryPage() {
+  const { gallery: photos } = useData();
   const [activeTag, setActiveTag] = useState("All");
-  const [lightbox, setLightbox] = useState<(typeof photos)[0] | null>(null);
+  const [lightbox, setLightbox] = useState<GalleryItem | null>(null);
 
   const filtered = activeTag === "All" ? photos : photos.filter((p) => p.tag === activeTag);
 

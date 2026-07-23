@@ -3,80 +3,24 @@ import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { Check, Star, ArrowRight, Zap, Crown, Sparkles } from "lucide-react";
+import { useData } from "@/lib/DataContext";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 40 },
-  visible: (i = 0) => ({
+  visible: (i: number = 0) => ({
     opacity: 1, y: 0,
     transition: { delay: i * 0.12, duration: 0.6, ease: [0.22, 1, 0.36, 1] },
   }),
 };
 
-const packages = [
-  {
-    id: "budget",
-    icon: Zap,
-    name: "Explorer",
-    subtitle: "Perfect for adventurers",
-    price: "$149",
-    duration: "3 Days / 2 Nights",
-    img: "/dest-casuarina.png",
-    featured: false,
-    color: "from-teal-DEFAULT to-ocean-500",
-    features: [
-      "Casuarina Beach visit",
-      "Jaffna Fort tour",
-      "Welcome breakfast",
-      "Hotel accommodation (budget)",
-      "Airport transfers",
-      "Local guide (English)",
-    ],
-  },
-  {
-    id: "standard",
-    icon: Star,
-    name: "Voyager",
-    subtitle: "Most popular choice",
-    price: "$299",
-    duration: "5 Days / 4 Nights",
-    img: "/exp-sunset.png",
-    featured: true,
-    color: "from-ocean-500 to-navy",
-    features: [
-      "All Explorer features",
-      "Nainativu island boat tour",
-      "Sunset cruise experience",
-      "Jaffna food trail",
-      "Mid-range hotel (AC)",
-      "Daily breakfast & dinner",
-      "Photography guide",
-      "Delft island visit",
-    ],
-  },
-  {
-    id: "premium",
-    icon: Crown,
-    name: "Prestige",
-    subtitle: "Ultimate luxury experience",
-    price: "$599",
-    duration: "7 Days / 6 Nights",
-    img: "/pkg-premium.png",
-    featured: false,
-    color: "from-coral to-sand",
-    features: [
-      "All Voyager features",
-      "Luxury beachfront resort",
-      "Private chef dining",
-      "Helicopter coastal tour",
-      "Spa & wellness sessions",
-      "Personal concierge 24/7",
-      "All meals included",
-      "Premium photography",
-    ],
-  },
-];
+const packageIcons: Record<string, any> = {
+  explorer: Crown,
+  voyager: Zap,
+  prestige: Sparkles,
+};
 
 export default function PackagesPage() {
+  const { packages } = useData();
   return (
     <>
       {/* Hero */}
@@ -135,8 +79,11 @@ export default function PackagesPage() {
                   <Image src={pkg.img} alt={pkg.name} fill className="object-cover" />
                   <div className={`absolute inset-0 bg-gradient-to-b ${pkg.featured ? "from-navy/50" : "from-transparent"} to-black/40`} />
                   <div className="absolute bottom-4 left-4">
-                    <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${pkg.color} flex items-center justify-center shadow-lg`}>
-                      <pkg.icon className="w-5 h-5 text-white" />
+                    <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${pkg.color || "from-teal-DEFAULT to-ocean-500"} flex items-center justify-center shadow-lg`}>
+                      {(() => {
+                        const IconComp = packageIcons[pkg.id.toLowerCase()] || Crown;
+                        return <IconComp className="w-5 h-5 text-white" />;
+                      })()}
                     </div>
                   </div>
                 </div>

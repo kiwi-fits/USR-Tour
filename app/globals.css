@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -21,37 +21,51 @@
   padding: 0;
 }
 
-html {
-  /* Scroll behavior managed by Lenis */
-}
 
 body {
-  font-family: 'Inter', system-ui, sans-serif;
+  font-family: 'Manrope', system-ui, sans-serif;
   background-color: var(--pearl);
+  background-image: var(--beach-wave-bg, linear-gradient(180deg, #CAF0F8 0%, #90E0EF 30%, #00B4D8 70%, #0077B6 100%));
+  background-attachment: fixed;
   color: var(--ocean-dark);
   overflow-x: hidden;
 }
 
 /* ===================== GLASSMORPHISM ===================== */
 .glass {
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(32px);
+  -webkit-backdrop-filter: blur(32px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 8px 32px rgba(0, 119, 182, 0.1), inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+}
+
+.glass-premium {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0.1) 100%);
+  backdrop-filter: blur(40px);
+  -webkit-backdrop-filter: blur(40px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: 0 20px 40px rgba(0, 119, 182, 0.15), inset 0 0 0 1px rgba(255, 255, 255, 0.3);
+  border-radius: 20px;
 }
 
 .glass-dark {
-  background: rgba(3, 4, 94, 0.3);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(0, 180, 216, 0.2);
+  background: rgba(3, 4, 94, 0.5);
+  backdrop-filter: blur(32px);
+  -webkit-backdrop-filter: blur(32px);
+  border: 1px solid rgba(0, 180, 216, 0.4);
+  box-shadow: 0 12px 40px rgba(3, 4, 94, 0.4), inset 0 0 0 1px rgba(0, 180, 216, 0.2);
+  border-radius: 20px;
 }
 
 .glass-card {
-  background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(0, 180, 216, 0.15);
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  box-shadow: 0 16px 40px rgba(0, 119, 182, 0.12), inset 0 0 0 1px rgba(255, 255, 255, 0.4);
+  border-radius: 20px;
 }
 
 /* ===================== OCEAN GRADIENT BG ===================== */
@@ -122,8 +136,34 @@ body {
   animation: pulseGlow 2s ease-in-out infinite;
 }
 
+.animate-pulse-glow {
+  animation: pulseGlow 3s ease-in-out infinite;
+}
+
 .animate-scale-in {
-  animation: scaleIn 0.5s ease forwards;
+  animation: scaleIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.glow-border {
+  position: relative;
+}
+.glow-border::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  background: linear-gradient(135deg, #00B4D8, #0077B6, #E76F51);
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  filter: blur(8px);
+}
+.glow-border:hover::before {
+  opacity: 0.7;
+}
+
+.text-shadow-sm {
+  text-shadow: 0 2px 10px rgba(0,0,0,0.2);
 }
 
 /* ===================== SCROLLBAR ===================== */
@@ -199,53 +239,83 @@ body {
   background-clip: text;
 }
 
+.gradient-india {
+  background: linear-gradient(90deg, #FF9933 0%, #FFFFFF 50%, #138808 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
 /* ===================== BUTTONS ===================== */
 .btn-primary {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
-  padding: 14px 32px;
+  padding: 16px 36px;
   background: linear-gradient(135deg, #0077B6 0%, #00B4D8 100%);
   color: white;
-  font-family: 'Outfit', sans-serif;
-  font-weight: 600;
-  font-size: 1rem;
+  font-family: 'Manrope', sans-serif;
+  font-weight: 700;
+  font-size: 1.05rem;
   border-radius: 50px;
-  border: none;
+  border: 1px solid rgba(255, 255, 255, 0.2);
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-  box-shadow: 0 4px 20px rgba(0, 119, 182, 0.4);
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 10px 30px rgba(0, 119, 182, 0.3), inset 0 2px 0 rgba(255,255,255,0.2);
   text-decoration: none;
   white-space: nowrap;
+  position: relative;
+  overflow: hidden;
+  min-height: 48px;
+  min-width: 48px;
+}
+
+.btn-primary::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(135deg, transparent, rgba(255,255,255,0.2), transparent);
+  transform: translateX(-100%);
+  transition: transform 0.6s ease;
+}
+
+.btn-primary:hover::after {
+  transform: translateX(100%);
 }
 
 .btn-primary:hover {
-  transform: translateY(-3px) scale(1.03);
-  box-shadow: 0 8px 30px rgba(0, 119, 182, 0.6);
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 15px 40px rgba(0, 180, 216, 0.5), inset 0 2px 0 rgba(255,255,255,0.4);
 }
 
 .btn-secondary {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
-  padding: 14px 32px;
-  background: transparent;
+  padding: 16px 36px;
+  background: rgba(255,255,255,0.1);
+  backdrop-filter: blur(10px);
   color: white;
-  font-family: 'Outfit', sans-serif;
-  font-weight: 600;
-  font-size: 1rem;
+  font-family: 'Manrope', sans-serif;
+  font-weight: 700;
+  font-size: 1.05rem;
   border-radius: 50px;
-  border: 2px solid rgba(255, 255, 255, 0.6);
+  border: 2px solid rgba(255, 255, 255, 0.8);
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
   text-decoration: none;
   white-space: nowrap;
+  min-height: 48px;
+  min-width: 48px;
 }
 
 .btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.25);
   border-color: white;
-  transform: translateY(-2px);
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 10px 30px rgba(255, 255, 255, 0.2);
 }
 
 .btn-coral {
@@ -255,7 +325,7 @@ body {
   padding: 14px 32px;
   background: linear-gradient(135deg, #E76F51 0%, #F4A261 100%);
   color: white;
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Manrope', sans-serif;
   font-weight: 600;
   font-size: 1rem;
   border-radius: 50px;
@@ -275,7 +345,7 @@ body {
 /* ===================== SECTION TITLES ===================== */
 .section-label {
   display: inline-block;
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Manrope', sans-serif;
   font-size: 0.8rem;
   font-weight: 700;
   letter-spacing: 0.2em;
@@ -285,7 +355,7 @@ body {
 }
 
 .section-title {
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Manrope', sans-serif;
   font-size: clamp(2rem, 5vw, 3.5rem);
   font-weight: 800;
   line-height: 1.15;
@@ -301,7 +371,7 @@ body {
 
 /* ===================== STATS ===================== */
 .stat-number {
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Manrope', sans-serif;
   font-size: clamp(2.5rem, 6vw, 4.5rem);
   font-weight: 900;
   background: linear-gradient(135deg, #00B4D8, #0077B6);
@@ -313,7 +383,7 @@ body {
 
 /* ===================== NAV ===================== */
 .nav-link {
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Manrope', sans-serif;
   font-weight: 500;
   font-size: 0.95rem;
   color: rgba(255, 255, 255, 0.85);
@@ -352,9 +422,9 @@ body {
 
 /* ===================== HERO ===================== */
 .hero-title {
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Manrope', sans-serif;
   font-size: clamp(3rem, 8vw, 6.5rem);
-  font-weight: 900;
+  font-weight: 800;
   line-height: 1.05;
   color: white;
 }
@@ -368,7 +438,7 @@ body {
   border-radius: 50px;
   font-size: 0.75rem;
   font-weight: 600;
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Manrope', sans-serif;
   letter-spacing: 0.05em;
 }
 
@@ -391,27 +461,76 @@ body {
 }
 
 /* ===================== FORM ===================== */
-.form-input {
+.form-input,
+.input-field {
   width: 100%;
-  padding: 14px 18px;
-  border: 2px solid rgba(0, 180, 216, 0.2);
-  border-radius: 12px;
-  font-family: 'Inter', sans-serif;
+  padding: 12px 16px;
+  border: 2px solid #CBD5E1;
+  border-radius: 14px;
+  font-family: 'Manrope', sans-serif;
   font-size: 0.95rem;
+  font-weight: 600;
   color: #03045E;
-  background: white;
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  background-color: #F8FAFC;
+  transition: all 0.2s ease;
   outline: none;
 }
 
-.form-input:focus {
+.form-input:focus,
+.input-field:focus {
   border-color: #00B4D8;
-  box-shadow: 0 0 0 4px rgba(0, 180, 216, 0.1);
+  border-left-width: 5px;
+  border-left-color: #00B4D8;
+  background-color: #FFFFFF;
+  box-shadow: -4px 0 12px rgba(0, 180, 216, 0.25), 0 0 0 4px rgba(0, 180, 216, 0.12);
+  transform: translateX(-3px);
+}
+
+/* ===================== iOS STYLE ICON CONTAINERS ===================== */
+.ios-icon-box {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(240, 249, 255, 0.85) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 4px 12px rgba(3, 4, 94, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.ios-icon-box:hover {
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 8px 20px rgba(0, 180, 216, 0.2);
+}
+
+.ios-icon-primary {
+  background: linear-gradient(135deg, #00B4D8 0%, #0077B6 100%);
+  color: white;
+  box-shadow: 0 6px 16px rgba(0, 180, 216, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.ios-icon-coral {
+  background: linear-gradient(135deg, #FF8A65 0%, #E76F51 100%);
+  color: white;
+  box-shadow: 0 6px 16px rgba(231, 111, 81, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.ios-icon-sand {
+  background: linear-gradient(135deg, #FFD166 0%, #F4A261 100%);
+  color: white;
+  box-shadow: 0 6px 16px rgba(244, 162, 97, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .form-label {
   display: block;
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Manrope', sans-serif;
   font-weight: 600;
   font-size: 0.9rem;
   color: #03045E;
@@ -419,21 +538,42 @@ body {
 }
 
 /* ===================== RESPONSIVE ===================== */
-@layer utilities {
   .container-custom {
-    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+    max-width: 80rem;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 1rem;
+    padding-right: 1rem;
   }
-}
+  @media (min-width: 640px) {
+    .container-custom {
+      padding-left: 1.5rem;
+      padding-right: 1.5rem;
+    }
+  }
+  @media (min-width: 1024px) {
+    .container-custom {
+      padding-left: 2rem;
+      padding-right: 2rem;
+    }
+  }
 
 /* Mobile touch optimization */
 @media (max-width: 768px) {
   .btn-primary, .btn-secondary, .btn-coral {
-    padding: 12px 24px;
-    font-size: 0.9rem;
+    padding: 14px 28px;
+    font-size: 1rem;
+    width: 100%;
+    justify-content: center;
   }
 
   .section-title {
-    font-size: clamp(1.8rem, 7vw, 2.5rem);
+    font-size: clamp(2rem, 9vw, 3rem);
+  }
+  
+  .glass-card {
+    padding: 24px;
+    border-radius: 20px;
   }
 }
 
@@ -449,24 +589,27 @@ body {
 
 /* ===================== PACKAGE CARD ===================== */
 .package-card {
-  background: white;
-  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 32px;
   overflow: hidden;
   box-shadow: 0 10px 40px rgba(3, 4, 94, 0.08);
   transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-  border: 2px solid transparent;
+  border: 1px solid rgba(255, 255, 255, 0.6);
 }
 
 .package-card:hover {
   transform: translateY(-10px);
   box-shadow: 0 30px 70px rgba(3, 4, 94, 0.15);
-  border-color: #00B4D8;
+  background: rgba(255, 255, 255, 0.5);
 }
 
 .package-card.featured {
-  border-color: #0077B6;
-  background: linear-gradient(135deg, #03045E 0%, #0077B6 100%);
+  border-color: rgba(0, 180, 216, 0.5);
+  background: linear-gradient(135deg, rgba(3, 4, 94, 0.7) 0%, rgba(0, 119, 182, 0.7) 100%);
   color: white;
+  backdrop-filter: blur(24px);
 }
 
 /* ===================== GALLERY GRID ===================== */
@@ -496,7 +639,7 @@ body {
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Manrope', sans-serif;
   font-weight: 700;
   font-size: 1rem;
   transition: all 0.3s ease;
