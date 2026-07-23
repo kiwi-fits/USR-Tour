@@ -27,10 +27,12 @@ export default function Footer() {
     return null;
   }
 
+  const isHomePage = pathname === "/";
+
   return (
-    <footer className="bg-navy text-white">
+    <footer className="text-white">
       {/* Wave top */}
-      <div className="relative overflow-hidden h-20 bg-pearl">
+      <div className={`relative overflow-hidden h-20 ${isHomePage ? "bg-transparent" : "bg-pearl"}`}>
         <svg
           viewBox="0 0 1440 80"
           className="absolute bottom-0 left-0 w-full"
@@ -40,7 +42,8 @@ export default function Footer() {
         </svg>
       </div>
 
-      <div className="container-custom py-8">
+      <div className="bg-navy">
+        <div className="container-custom py-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {/* Brand */}
           <div className="lg:col-span-1">
@@ -147,6 +150,7 @@ export default function Footer() {
               <Lock className="w-3.5 h-3.5" /> Admin Panel
             </Link>
           </div>
+        </div>
         </div>
       </div>
     </footer>
