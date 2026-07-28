@@ -311,27 +311,27 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   // Save changes to API
   const saveDestinations = (data: Destination[]) => {
     setDestinations(data);
-    fetch("/api/store/usr_destinations", { method: "POST", body: JSON.stringify(data) }).catch(console.error);
+    fetch("/api/store/usr_destinations", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).catch(console.error);
   };
 
   const saveExperiences = (data: Experience[]) => {
     setExperiences(data);
-    fetch("/api/store/usr_experiences", { method: "POST", body: JSON.stringify(data) }).catch(console.error);
+    fetch("/api/store/usr_experiences", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).catch(console.error);
   };
 
   const savePackages = (data: PackageItem[]) => {
     setPackages(data);
-    fetch("/api/store/usr_packages", { method: "POST", body: JSON.stringify(data) }).catch(console.error);
+    fetch("/api/store/usr_packages", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).catch(console.error);
   };
 
   const saveGallery = (data: GalleryItem[]) => {
     setGallery(data);
-    fetch("/api/store/usr_gallery", { method: "POST", body: JSON.stringify(data) }).catch(console.error);
+    fetch("/api/store/usr_gallery", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).catch(console.error);
   };
 
   const saveContact = (data: ContactDetails) => {
     setContact(data);
-    fetch("/api/store/usr_contact", { method: "POST", body: JSON.stringify(data) }).catch(console.error);
+    fetch("/api/store/usr_contact", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).catch(console.error);
   };
 
   // ─── Destination CRUD ──────────────────────────────────────────────────────
@@ -394,7 +394,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   // ─── Booking CRUD ──────────────────────────────────────────────────────────
   const saveBookings = (data: BookingRecord[]) => {
     setBookings(data);
-    fetch("/api/store/usr_bookings", { method: "POST", body: JSON.stringify(data) }).catch(console.error);
+    fetch("/api/store/usr_bookings", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).catch(console.error);
   };
 
   const addBooking = (item: Omit<BookingRecord, "id" | "bookedAt"> & { id?: string }) => {

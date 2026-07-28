@@ -1,110 +1,65 @@
 import { NextResponse } from 'next/server';
-import fs from 'fs/promises';
-import path from 'path';
 
 export const dynamic = 'force-dynamic';
+
+// ── In-memory store for local development ────────────────────────────────────
+// This persists as long as the Next.js dev server is running.
+// On Cloudflare, the KV binding is used instead.
+const memStore = new Map<string, any>();
+
+// Pre-seed with empty arrays so the app works immediately on first load locally
+const defaultValues: Record<string, any> = {
+  usr_bookings: [],
+};
 
 export async function GET(request: Request, { params }: { params: { key: string } }) {
   const { key } = params;
 
   try {
-    let kv: any = null;
-
-    // 1. Try to get Cloudflare context from OpenNext
+    // 1. Try Cloudflare KV first
     try {
-      // Use dynamic import so it doesn't break standard Next.js local dev
       const { getCloudflareContext } = await import('@opennextjs/cloudflare');
       const ctx = (await getCloudflareContext()) as any;
       if (ctx?.env?.TOURISM_KV) {
-        kv = ctx.env.TOURISM_KV;
+        const data = await ctx.env.TOURISM_KV.get(key, 'json');
+        return NextResponse.json(data ?? null);
       }
-    } catch (e) {
-      // Ignore: we might be in standard next dev
+    } catch (_) {
+      // Not on Cloudflare — use in-memory fallback
     }
 
-    // Fallback: sometimes binding is directly on process.env in Edge runtime
-    if (!kv && process.env.TOURISM_KV) {
-      kv = process.env.TOURISM_KV;
-    }
-
-    // If we have a KV binding, use it!
-    if (kv) {
-      const data = await kv.get(key, 'json');
-      return NextResponse.json(data || null);
-    } 
-    
-    // 2. Local Development Fallback
-    // If KV binding is missing, try falling back to local filesystem (works locally, fails gracefully on Cloudflare)
-    const dbPath = path.join(process.cwd(), 'local-kv-db.json');
-    
-    try {
-      const fileContent = await fs.readFile(dbPath, 'utf-8');
-      const db = JSON.parse(fileContent);
-      return NextResponse.json(db[key] || null);
-    } catch (err: any) {
-      if (err.code === 'ENOENT') {
-        return NextResponse.json(null);
-      }
-      throw err;
-    }
-
-    // Default if no binding and not local dev
-    console.error("KV Binding TOURISM_KV not found in environment!");
-    return NextResponse.json({ error: 'KV Binding not found' }, { status: 500 });
+    // 2. Local dev in-memory fallback
+    const value = memStore.has(key) ? memStore.get(key) : (defaultValues[key] ?? null);
+    return NextResponse.json(value);
   } catch (error) {
-    console.error(`Error reading KV for key ${key}:`, error);
-    return NextResponse.json({ error: 'Failed to read data' }, { status: 500 });
+    console.error(`[KV GET] Error for key "${key}":`, error);
+    return NextResponse.json(null);
   }
 }
 
 export async function POST(request: Request, { params }: { params: { key: string } }) {
   const { key } = params;
-  
+
   try {
     const body = await request.json();
-    let kv: any = null;
 
-    // 1. Try to get Cloudflare context from OpenNext
+    // 1. Try Cloudflare KV first
     try {
       const { getCloudflareContext } = await import('@opennextjs/cloudflare');
       const ctx = (await getCloudflareContext()) as any;
       if (ctx?.env?.TOURISM_KV) {
-        kv = ctx.env.TOURISM_KV;
+        await ctx.env.TOURISM_KV.put(key, JSON.stringify(body));
+        return NextResponse.json({ success: true });
       }
-    } catch (e) {
-      // Ignore
+    } catch (_) {
+      // Not on Cloudflare — use in-memory fallback
     }
 
-    if (!kv && process.env.TOURISM_KV) {
-      kv = process.env.TOURISM_KV;
-    }
-
-    if (kv) {
-      // Save data as JSON string in KV
-      await kv.put(key, JSON.stringify(body));
-      return NextResponse.json({ success: true });
-    }
-    
-    // 2. Local Development Fallback
-    const dbPath = path.join(process.cwd(), 'local-kv-db.json');
-    
-    let db: Record<string, any> = {};
-    try {
-      const fileContent = await fs.readFile(dbPath, 'utf-8');
-      db = JSON.parse(fileContent);
-    } catch (err: any) {
-      // Ignore if file doesn't exist yet
-    }
-    
-    // Update key and write back to file
-    db[key] = body;
-    await fs.writeFile(dbPath, JSON.stringify(db, null, 2), 'utf-8');
-    
+    // 2. Local dev in-memory fallback
+    memStore.set(key, body);
     return NextResponse.json({ success: true });
-    console.error("KV Binding TOURISM_KV not found in environment!");
-    return NextResponse.json({ error: 'KV Binding not found' }, { status: 500 });
   } catch (error) {
-    console.error(`Error writing KV for key ${key}:`, error);
+    console.error(`[KV POST] Error for key "${key}":`, error);
     return NextResponse.json({ error: 'Failed to write data' }, { status: 500 });
   }
 }
