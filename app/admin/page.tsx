@@ -194,6 +194,18 @@ export default function AdminPage() {
     if (galModal.open) setGalImg("/dest-casuarina.png");
   }, [galModal]);
 
+  useEffect(() => {
+    const isAnyModalOpen = destModal.open || expModal.open || pkgModal.open || galModal.open;
+    if (isAnyModalOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [destModal.open, expModal.open, pkgModal.open, galModal.open]);
+
   const showToast = (msg: string) => {
     setToast(msg);
     setTimeout(() => setToast(null), 3000);

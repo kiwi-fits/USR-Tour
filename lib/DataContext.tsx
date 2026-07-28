@@ -272,6 +272,7 @@ export const initialBookings: BookingRecord[] = [
 
 // ─── Context Interface ──────────────────────────────────────────────────────
 type DataContextType = {
+  isInitialized: boolean;
   destinations: Destination[];
   addDestination: (item: Omit<Destination, "id">) => void;
   updateDestination: (id: number, item: Partial<Destination>) => void;
@@ -312,55 +313,65 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const [contact, setContact] = useState<ContactDetails>(initialContact);
   const [bookings, setBookings] = useState<BookingRecord[]>(initialBookings);
 
-  // Load stored data from localStorage on mount
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  // Load stored data from API on mount
   useEffect(() => {
-    try {
-      const storedDest = localStorage.getItem("usr_destinations");
-      if (storedDest) setDestinations(JSON.parse(storedDest));
+    let mounted = true;
+    async function loadData() {
+      try {
+        const keys = [
+          { key: "usr_destinations", setter: setDestinations },
+          { key: "usr_experiences", setter: setExperiences },
+          { key: "usr_packages", setter: setPackages },
+          { key: "usr_gallery", setter: setGallery },
+          { key: "usr_contact", setter: setContact },
+          { key: "usr_bookings", setter: setBookings },
+        ];
 
-      const storedExp = localStorage.getItem("usr_experiences");
-      if (storedExp) setExperiences(JSON.parse(storedExp));
-
-      const storedPkg = localStorage.getItem("usr_packages");
-      if (storedPkg) setPackages(JSON.parse(storedPkg));
-
-      const storedGal = localStorage.getItem("usr_gallery");
-      if (storedGal) setGallery(JSON.parse(storedGal));
-
-      const storedContact = localStorage.getItem("usr_contact");
-      if (storedContact) setContact(JSON.parse(storedContact));
-
-      const storedBookings = localStorage.getItem("usr_bookings");
-      if (storedBookings) setBookings(JSON.parse(storedBookings));
-    } catch (err) {
-      console.error("Failed to load stored data", err);
+        await Promise.all(
+          keys.map(async (item) => {
+            const res = await fetch(`/api/store/${item.key}`);
+            if (res.ok) {
+              const data = await res.json();
+              if (data && mounted) item.setter(data);
+            }
+          })
+        );
+      } catch (err) {
+        console.error("Failed to load stored data from KV API", err);
+      } finally {
+        if (mounted) setIsInitialized(true);
+      }
     }
+    loadData();
+    return () => { mounted = false; };
   }, []);
 
-  // Save changes to localStorage
+  // Save changes to API
   const saveDestinations = (data: Destination[]) => {
     setDestinations(data);
-    localStorage.setItem("usr_destinations", JSON.stringify(data));
+    fetch("/api/store/usr_destinations", { method: "POST", body: JSON.stringify(data) }).catch(console.error);
   };
 
   const saveExperiences = (data: Experience[]) => {
     setExperiences(data);
-    localStorage.setItem("usr_experiences", JSON.stringify(data));
+    fetch("/api/store/usr_experiences", { method: "POST", body: JSON.stringify(data) }).catch(console.error);
   };
 
   const savePackages = (data: PackageItem[]) => {
     setPackages(data);
-    localStorage.setItem("usr_packages", JSON.stringify(data));
+    fetch("/api/store/usr_packages", { method: "POST", body: JSON.stringify(data) }).catch(console.error);
   };
 
   const saveGallery = (data: GalleryItem[]) => {
     setGallery(data);
-    localStorage.setItem("usr_gallery", JSON.stringify(data));
+    fetch("/api/store/usr_gallery", { method: "POST", body: JSON.stringify(data) }).catch(console.error);
   };
 
   const saveContact = (data: ContactDetails) => {
     setContact(data);
-    localStorage.setItem("usr_contact", JSON.stringify(data));
+    fetch("/api/store/usr_contact", { method: "POST", body: JSON.stringify(data) }).catch(console.error);
   };
 
   // ─── Destination CRUD ──────────────────────────────────────────────────────
@@ -423,7 +434,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   // ─── Booking CRUD ──────────────────────────────────────────────────────────
   const saveBookings = (data: BookingRecord[]) => {
     setBookings(data);
-    localStorage.setItem("usr_bookings", JSON.stringify(data));
+    fetch("/api/store/usr_bookings", { method: "POST", body: JSON.stringify(data) }).catch(console.error);
   };
 
   const addBooking = (item: Omit<BookingRecord, "id" | "bookedAt"> & { id?: string }) => {
@@ -448,23 +459,18 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
   // ─── Reset ─────────────────────────────────────────────────────────────────
   const resetToDefaults = () => {
-    localStorage.removeItem("usr_destinations");
-    localStorage.removeItem("usr_experiences");
-    localStorage.removeItem("usr_packages");
-    localStorage.removeItem("usr_gallery");
-    localStorage.removeItem("usr_contact");
-    localStorage.removeItem("usr_bookings");
-    setDestinations(initialDestinations);
-    setExperiences(initialExperiences);
-    setPackages(initialPackages);
-    setGallery(initialGallery);
-    setContact(initialContact);
-    setBookings(initialBookings);
+    saveDestinations(initialDestinations);
+    saveExperiences(initialExperiences);
+    savePackages(initialPackages);
+    saveGallery(initialGallery);
+    saveContact(initialContact);
+    saveBookings(initialBookings);
   };
 
   return (
     <DataContext.Provider
       value={{
+        isInitialized,
         destinations,
         addDestination,
         updateDestination,

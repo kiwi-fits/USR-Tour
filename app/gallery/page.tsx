@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, ZoomIn, Compass, Filter } from "lucide-react";
@@ -22,6 +22,17 @@ export default function GalleryPage() {
   const [lightbox, setLightbox] = useState<GalleryItem | null>(null);
 
   const filtered = activeTag === "All" ? photos : photos.filter((p) => p.tag === activeTag);
+
+  useEffect(() => {
+    if (lightbox) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [lightbox]);
 
   return (
     <div className="min-h-screen bg-slate-50">

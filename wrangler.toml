@@ -7,3 +7,7 @@ compatibility_flags = ["nodejs_compat"]
 [assets]
 directory = ".open-next/assets"
 binding = "ASSETS"
+
+[[kv_namespaces]]
+binding = "TOURISM_KV"
+id = "xxxxxxxxxxxxxxxxx" # Replace with actual KV namespace ID later
