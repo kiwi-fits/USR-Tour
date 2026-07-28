@@ -52,19 +52,19 @@ function BookingFormContent() {
 
   const formData = watch();
 
-  const onSubmit = async () => {
+  const onSubmit = async (data: BookingForm) => {
     await new Promise((r) => setTimeout(r, 1000));
     const pkg = packages.find((p) => p.id === selectedPackage);
     addBooking({
       packageName: pkg ? `${pkg.name} (${pkg.duration})` : "Custom Tour",
       packagePrice: pkg ? pkg.price : "LKR 60,000",
-      fullName: [formData.firstName, formData.lastName].filter(Boolean).join(" ") || "Guest Customer",
-      email: formData.email || "",
-      phone: formData.phone || "",
-      country: formData.country || "India",
-      date: formData.startDate || new Date().toISOString().split("T")[0],
-      guests: formData.guests || 2,
-      status: "Confirmed",
+      fullName: [data.firstName, data.lastName].filter(Boolean).join(" ") || "Guest Customer",
+      email: data.email || "",
+      phone: data.phone || "",
+      country: data.country || "India",
+      date: data.startDate || new Date().toISOString().split("T")[0],
+      guests: Number(data.guests) || 2,
+      status: "Pending",
     });
     setConfirmed(true);
   };
@@ -185,29 +185,33 @@ function BookingFormContent() {
                         <div
                           key={pkg.id}
                           onClick={() => setSelectedPackage(pkg.id)}
-                          className={`flex items-center gap-4 p-4 rounded-2xl border-2 cursor-pointer transition-all ${
+                          className={`flex flex-col sm:flex-row sm:items-center gap-4 p-4 rounded-2xl border-2 cursor-pointer transition-all ${
                             selectedPackage === pkg.id
                               ? "border-blue-600 bg-blue-50/50 shadow-md"
                               : "border-slate-200 hover:border-slate-300"
                           }`}
                         >
-                          <div className="relative w-20 h-16 rounded-xl overflow-hidden shrink-0">
-                            <Image src={pkg.img} alt={pkg.name} fill className="object-cover" />
+                          <div className="flex items-center gap-4 w-full sm:w-auto">
+                            <div className="relative w-20 h-16 rounded-xl overflow-hidden shrink-0">
+                              <Image src={pkg.img} alt={pkg.name} fill className="object-cover" />
+                            </div>
+                            <div className="flex-1">
+                              <h4 className="font-extrabold text-slate-900 text-base">{pkg.name}</h4>
+                              <p className="text-slate-500 text-xs font-semibold">{pkg.duration}</p>
+                            </div>
                           </div>
-                          <div className="flex-1">
-                            <h4 className="font-extrabold text-slate-900 text-base">{pkg.name}</h4>
-                            <p className="text-slate-500 text-xs font-semibold">{pkg.duration}</p>
-                          </div>
-                          <div className="text-right">
-                            <span className="font-black text-blue-600 text-xl">{pkg.price}</span>
-                            <p className="text-slate-400 text-[0.68rem] font-bold uppercase">per person</p>
-                          </div>
-                          <div
-                            className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
-                              selectedPackage === pkg.id ? "border-blue-600 bg-blue-600 text-white" : "border-slate-300"
-                            }`}
-                          >
-                            {selectedPackage === pkg.id && <Check className="w-3.5 h-3.5" />}
+                          <div className="flex items-center justify-between sm:justify-end gap-4 w-full sm:w-auto pt-3 sm:pt-0 border-t sm:border-t-0 border-slate-100">
+                            <div className="text-left sm:text-right">
+                              <span className="font-black text-blue-600 text-xl">{pkg.price}</span>
+                              <p className="text-slate-400 text-[0.68rem] font-bold uppercase">per person</p>
+                            </div>
+                            <div
+                              className={`w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                                selectedPackage === pkg.id ? "border-blue-600 bg-blue-600 text-white" : "border-slate-300"
+                              }`}
+                            >
+                              {selectedPackage === pkg.id && <Check className="w-3.5 h-3.5" />}
+                            </div>
                           </div>
                         </div>
                       ))}

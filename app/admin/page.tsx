@@ -135,9 +135,9 @@ function ImageUploader({
 }
 
 export default function AdminPage() {
-  const [username, setUsername] = useState("admin");
-  const [password, setPassword] = useState("admin123");
-  const [isAuthenticated, setIsAuthenticated] = useState(true);
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [passError, setPassError] = useState(false);
 
   useEffect(() => {

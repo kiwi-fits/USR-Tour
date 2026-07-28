@@ -90,7 +90,7 @@ export default function HomePage() {
       {/* ══════════════════════════════════════════════
           1. HERO SECTION WITH MODERN GLASS SEARCH CARD
       ══════════════════════════════════════════════ */}
-      <section className="relative min-h-[92vh] flex flex-col justify-between overflow-hidden bg-slate-950 pt-28 pb-16">
+      <section className="relative min-h-[92vh] flex flex-col justify-between overflow-hidden bg-slate-950 pt-28 pb-8 sm:pb-16">
         {/* Background Image */}
         <div className="absolute inset-0 z-0">
           <Image
@@ -227,9 +227,9 @@ export default function HomePage() {
       {/* ══════════════════════════════════════════════
           2. WHY VISIT JAFFNA - GLASS FEATURE HIGHLIGHTS
       ══════════════════════════════════════════════ */}
-      <section className="py-20 bg-slate-100/50">
+      <section className="pt-6 pb-12 sm:py-20 bg-slate-100/50">
         <div className="container-custom">
-          <div className="text-center max-w-2xl mx-auto mb-14">
+          <div className="text-center max-w-2xl mx-auto mb-10 sm:mb-14">
             <span className="text-xs font-black tracking-widest text-blue-600 uppercase bg-blue-50 px-4 py-1.5 rounded-full">
               Why Choose Jaffna
             </span>
@@ -261,10 +261,6 @@ export default function HomePage() {
                     <h3 className="font-bold text-slate-900 text-xl mb-2">{h.title}</h3>
                     <p className="text-slate-500 text-sm leading-relaxed">{h.desc}</p>
                   </div>
-                  <div className="mt-6 pt-4 border-t border-slate-200/60 flex items-center text-blue-600 font-bold text-sm group-hover:translate-x-1 transition-transform">
-                    <span>Explore features</span>
-                    <ArrowRight className="w-4 h-4 ml-1.5" />
-                  </div>
                 </motion.div>
               );
             })}
@@ -275,9 +271,9 @@ export default function HomePage() {
       {/* ══════════════════════════════════════════════
           3. TOP DESTINATIONS SECTION (GLASS CARDS)
       ══════════════════════════════════════════════ */}
-      <section className="py-20 bg-slate-100/70">
+      <section className="py-12 sm:py-20 bg-slate-100/70">
         <div className="container-custom">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8 sm:mb-12">
             <div>
               <span className="text-xs font-black tracking-widest text-blue-600 uppercase bg-blue-50 px-4 py-1.5 rounded-full">
                 Must-Visit Places
