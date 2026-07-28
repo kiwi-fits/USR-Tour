@@ -85,7 +85,7 @@ export default function ExperiencesPage() {
                 >
                   {/* Photo Side (lg:col-span-5) */}
                   <div className={`relative min-h-[300px] lg:h-auto lg:col-span-5 ${i % 2 === 1 ? "lg:order-2" : ""}`}>
-                    <Image src={exp.img} alt={exp.title} fill className="object-cover" />
+                    <Image src={exp.img} alt={exp.title} fill sizes="(max-width: 1024px) 100vw, 40vw" className="object-cover" />
                     <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 to-transparent" />
                     
                     {/* Category Pill */}

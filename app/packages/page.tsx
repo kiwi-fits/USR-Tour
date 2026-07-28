@@ -89,7 +89,7 @@ export default function PackagesPage() {
 
                   <div>
                     <div className="relative h-44 w-full rounded-2xl overflow-hidden mb-6">
-                      <Image src={pkg.img} alt={pkg.name} fill className="object-cover" />
+                      <Image src={pkg.img} alt={pkg.name} fill sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" className="object-cover" />
                       <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 to-transparent" />
                     </div>
 

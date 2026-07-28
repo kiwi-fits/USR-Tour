@@ -98,6 +98,7 @@ export default function HomePage() {
             alt="Jaffna Coastline"
             fill
             priority
+            sizes="100vw"
             className="object-cover object-center scale-105 animate-float-slow opacity-60"
           />
           {/* Multi-layered Contrast Overlay */}
@@ -312,6 +313,7 @@ export default function HomePage() {
                     src={d.img}
                     alt={d.name}
                     fill
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
                     className="object-cover group-hover:scale-105 transition-transform duration-500"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-transparent" />
