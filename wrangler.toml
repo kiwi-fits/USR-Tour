@@ -1,0 +1,9 @@
+name = "jaffna-tourism"
+main = ".open-next/worker.js"
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat"]
+
+# Cloudflare Pages Assets configurations
+[assets]
+directory = ".open-next/assets"
+binding = "ASSETS"
