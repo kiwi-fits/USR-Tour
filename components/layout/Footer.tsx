@@ -1,156 +1,92 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Waves, Mail, Phone, MapPin, Instagram, Facebook, Twitter, Youtube, Lock } from "lucide-react";
+import { Compass, Phone, Mail, MapPin, ShieldCheck } from "lucide-react";
 import { useData } from "@/lib/DataContext";
 
-const footerLinks = {
-  explore: [
-    { href: "/destinations", label: "Destinations" },
-    { href: "/experiences", label: "Experiences" },
-    { href: "/packages", label: "Tour Packages" },
-    { href: "/gallery", label: "Gallery" },
-  ],
-  company: [
-    { href: "/contact", label: "Contact Us" },
-    { href: "/booking", label: "Book a Tour" },
-    { href: "#about", label: "About Jaffna" },
-    { href: "#faq", label: "FAQ" },
-  ],
-};
-
 export default function Footer() {
-  const { contact } = useData();
   const pathname = usePathname();
+  const { contact } = useData();
 
-  if (pathname?.startsWith("/admin")) {
-    return null;
-  }
-
-  const isHomePage = pathname === "/";
+  if (pathname?.startsWith("/admin")) return null;
 
   return (
-    <footer className="text-white">
-      {/* Wave top */}
-      <div className={`relative overflow-hidden h-20 ${isHomePage ? "bg-transparent" : "bg-pearl"}`}>
-        <svg
-          viewBox="0 0 1440 80"
-          className="absolute bottom-0 left-0 w-full"
-          preserveAspectRatio="none"
-        >
-          <path fill="#03045E" d="M0,40 C360,80 1080,0 1440,40 L1440,80 L0,80 Z" />
-        </svg>
-      </div>
-
-      <div className="bg-navy">
-        <div className="container-custom py-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {/* Brand */}
-          <div className="lg:col-span-1">
-            <Link href="/" className="flex items-center mb-5 group">
-              <div className="flex flex-col items-center">
-                <span className="font-display font-extrabold gradient-india text-3xl leading-none uppercase tracking-wider">
-                  USR
-                </span>
-                <div className="flex justify-between w-full font-display font-medium text-teal-DEFAULT text-[0.8rem] leading-none uppercase mt-1">
-                  <span>T</span><span>O</span><span>U</span><span>R</span><span>S</span>
-                </div>
+    <footer className="bg-slate-950 text-slate-400 font-sans pt-16 pb-8 border-t border-slate-800">
+      <div className="container-custom">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-10 pb-12 border-b border-slate-800">
+          
+          {/* Brand Info */}
+          <div className="md:col-span-4 flex flex-col items-start">
+            <Link href="/" className="flex items-center gap-2.5 mb-4">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-cyan-400 flex items-center justify-center text-white shadow-md">
+                <Compass className="w-5 h-5" />
               </div>
+              <span className="font-black text-xl text-white tracking-tight">
+                USR <span className="text-cyan-400">TOURS</span>
+              </span>
             </Link>
-            <p className="text-white/60 text-sm leading-relaxed mb-4">
-              <strong>Travel with us. Create memories.</strong>
+            <p className="text-slate-400 text-sm leading-relaxed mb-6 max-w-sm">
+              Your premier licensed travel agency specializing in Jaffna tourism from India and worldwide. Experience luxury, culture, and paradise.
             </p>
-            <p className="text-white/40 text-xs leading-relaxed mb-6">
-              Your premium gateway to the pearl of the north. Experience pristine beaches, rich heritage, and warm Sri Lankan hospitality.
-            </p>
-            <div className="flex gap-3">
-              {[
-                { icon: Instagram, href: "#", label: "Instagram" },
-                { icon: Facebook, href: "#", label: "Facebook" },
-                { icon: Twitter, href: "#", label: "Twitter" },
-                { icon: Youtube, href: "#", label: "YouTube" },
-              ].map(({ icon: Icon, href, label }) => (
-                <a
-                  key={label}
-                  href={href}
-                  aria-label={label}
-                  className="ios-icon-box bg-white/10 border-white/20 text-white hover:bg-teal-DEFAULT hover:text-white transition-all duration-300 !w-10 !h-10"
-                >
-                  <Icon className="w-4 h-4 stroke-[2]" />
-                </a>
-              ))}
+            <div className="flex items-center gap-2 text-xs text-slate-400 font-bold bg-slate-900 px-3.5 py-2 rounded-xl border border-slate-800">
+              <ShieldCheck className="w-4 h-4 text-cyan-400" />
+              <span>100% Certified Local Tourism Partner</span>
             </div>
           </div>
 
-          {/* Explore */}
-          <div>
-            <h3 className="font-display font-bold text-white text-lg mb-5">Explore</h3>
-            <ul className="space-y-3">
-              {footerLinks.explore.map((link) => (
-                <li key={link.href}>
-                  <Link href={link.href} className="text-white/60 hover:text-teal-DEFAULT transition-colors text-sm flex items-center gap-2 group">
-                    <span className="w-1.5 h-1.5 rounded-full bg-teal-DEFAULT opacity-0 group-hover:opacity-100 transition-opacity" />
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
+          {/* Quick Links */}
+          <div className="md:col-span-2">
+            <h4 className="font-bold text-white text-sm uppercase tracking-wider mb-4">Navigation</h4>
+            <ul className="space-y-2.5 text-sm">
+              <li><Link href="/" className="hover:text-cyan-400 transition-colors">Home</Link></li>
+              <li><Link href="/destinations" className="hover:text-cyan-400 transition-colors">Destinations</Link></li>
+              <li><Link href="/experiences" className="hover:text-cyan-400 transition-colors">Experiences</Link></li>
+              <li><Link href="/packages" className="hover:text-cyan-400 transition-colors">Tour Packages</Link></li>
+              <li><Link href="/gallery" className="hover:text-cyan-400 transition-colors">Photo Gallery</Link></li>
             </ul>
           </div>
 
           {/* Company */}
-          <div>
-            <h3 className="font-display font-bold text-white text-lg mb-5">Company</h3>
-            <ul className="space-y-3">
-              {footerLinks.company.map((link) => (
-                <li key={link.href}>
-                  <Link href={link.href} className="text-white/60 hover:text-teal-DEFAULT transition-colors text-sm flex items-center gap-2 group">
-                    <span className="w-1.5 h-1.5 rounded-full bg-teal-DEFAULT opacity-0 group-hover:opacity-100 transition-opacity" />
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
+          <div className="md:col-span-2">
+            <h4 className="font-bold text-white text-sm uppercase tracking-wider mb-4">Company</h4>
+            <ul className="space-y-2.5 text-sm">
+              <li><Link href="/contact" className="hover:text-cyan-400 transition-colors">Contact Us</Link></li>
+              <li><Link href="/booking" className="hover:text-cyan-400 transition-colors">Book a Trip</Link></li>
+              <li><Link href="/admin" className="hover:text-cyan-400 transition-colors">Admin Dashboard</Link></li>
             </ul>
           </div>
 
-          {/* Contact */}
-          <div>
-            <h3 className="font-display font-bold text-white text-lg mb-5">Contact</h3>
-            <ul className="space-y-4">
-              <li>
-                <a href={`tel:${contact.phone}`} className="flex items-start gap-3 text-white/60 hover:text-teal-DEFAULT transition-colors text-sm group">
-                  <Phone className="w-4 h-4 mt-0.5 text-teal-DEFAULT shrink-0" />
-                  {contact.phone}
-                </a>
-              </li>
-              <li>
-                <a href={`mailto:${contact.email}`} className="flex items-start gap-3 text-white/60 hover:text-teal-DEFAULT transition-colors text-sm group">
-                  <Mail className="w-4 h-4 mt-0.5 text-teal-DEFAULT shrink-0" />
-                  {contact.email}
-                </a>
-              </li>
-              <li>
-                <div className="flex items-start gap-3 text-white/60 text-sm">
-                  <MapPin className="w-4 h-4 mt-0.5 text-teal-DEFAULT shrink-0" />
-                  <span>{contact.address}</span>
-                </div>
-              </li>
-            </ul>
+          {/* Contact Details */}
+          <div className="md:col-span-4 space-y-3">
+            <h4 className="font-bold text-white text-sm uppercase tracking-wider mb-4">Contact Info</h4>
+            <a href={`tel:${contact.phone}`} className="flex items-center gap-3 text-sm hover:text-white transition-colors">
+              <div className="w-8 h-8 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-cyan-400 shrink-0">
+                <Phone className="w-4 h-4" />
+              </div>
+              <span>{contact.phone}</span>
+            </a>
+            <a href={`mailto:${contact.email}`} className="flex items-center gap-3 text-sm hover:text-white transition-colors">
+              <div className="w-8 h-8 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-cyan-400 shrink-0">
+                <Mail className="w-4 h-4" />
+              </div>
+              <span>{contact.email}</span>
+            </a>
+            <div className="flex items-center gap-3 text-sm">
+              <div className="w-8 h-8 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-cyan-400 shrink-0">
+                <MapPin className="w-4 h-4" />
+              </div>
+              <span>{contact.address}</span>
+            </div>
           </div>
         </div>
 
-        {/* Bottom bar */}
-        <div className="mt-8 pt-6 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-white/40 text-sm">
-            © {new Date().getFullYear()} USR Tours. All rights reserved.
-          </p>
-          <div className="flex gap-6 items-center">
-            <a href="#" className="text-white/40 hover:text-white/70 text-sm transition-colors">Privacy Policy</a>
-            <a href="#" className="text-white/40 hover:text-white/70 text-sm transition-colors">Terms of Service</a>
-            <Link href="/admin" className="text-teal-light/70 hover:text-teal-light text-sm font-semibold flex items-center gap-1 transition-colors">
-              <Lock className="w-3.5 h-3.5" /> Admin Panel
-            </Link>
+        {/* Bottom Bar */}
+        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
+          <p>© {new Date().getFullYear()} USR Tours Jaffna. All rights reserved.</p>
+          <div className="flex items-center gap-4">
+            <span className="hover:text-slate-300 cursor-pointer">Privacy Policy</span>
+            <span className="hover:text-slate-300 cursor-pointer">Terms of Service</span>
           </div>
-        </div>
         </div>
       </div>
     </footer>

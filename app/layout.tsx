@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { Manrope } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
@@ -7,35 +6,17 @@ import LenisProvider from "@/components/providers/LenisProvider";
 import InteractiveLayout from "@/components/layout/InteractiveLayout";
 import { DataProvider } from "@/lib/DataContext";
 
-const manrope = Manrope({
-  subsets: ["latin"],
-  variable: "--font-manrope",
-  display: "swap",
-});
-
 export const metadata: Metadata = {
-  title: "USR Tours | Your Perfect Jaffna Getaway from India",
+  title: "USR Tours | Experience Jaffna — Sri Lanka's Northern Paradise",
   description:
-    "Explore the breathtaking beaches, ancient temples, rich Tamil culture, and warm hospitality of Jaffna, Sri Lanka. Just a short trip from India. Travel with USR Tours.",
-  keywords:
-    "Jaffna tours from India, Chennai to Jaffna, Sri Lanka travel, Tamil culture tours, Nallur Kandaswamy temple, Jaffna vacation packages, USR tours",
-  openGraph: {
-    title: "USR Tours | Your Perfect Jaffna Getaway",
-    description:
-      "Explore the breathtaking beaches, ancient temples, and shared heritage of Jaffna, Sri Lanka with USR Tours.",
-    type: "website",
-    locale: "en_US",
-  },
+    "Explore pristine turquoise beaches, historic Dutch forts, ancient Tamil Kovils, and authentic Jaffna crab curry. Premium tour packages with USR Tours.",
+  keywords: "Jaffna travel, Sri Lanka tourism, Jaffna packages, Chennai to Jaffna, USR Tours",
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${manrope.variable}`}>
-      <body className="antialiased">
+    <html lang="en">
+      <body className="antialiased selection:bg-cyan-500 selection:text-white">
         <DataProvider>
           <LenisProvider>
             <InteractiveLayout>

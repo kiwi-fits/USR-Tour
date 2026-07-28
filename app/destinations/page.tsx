@@ -2,28 +2,20 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { motion, AnimatePresence } from "framer-motion";
-import { MapPin, Star, Clock, ArrowRight, Filter } from "lucide-react";
+import { motion } from "framer-motion";
+import { MapPin, Star, Clock, ArrowRight, Filter, Compass } from "lucide-react";
 import { useData } from "@/lib/DataContext";
 
-const fadeUp = {
-  hidden: { opacity: 0, y: 15 },
+const fadeInUp = {
+  hidden: { opacity: 0, y: 16 },
   visible: (i: number = 0) => ({
-    opacity: 1, y: 0,
-    transition: { delay: i * 0.05, duration: 0.6, ease: [0.16, 1, 0.3, 1] },
+    opacity: 1,
+    y: 0,
+    transition: { delay: i * 0.04, duration: 0.35, ease: "easeOut" },
   }),
 };
 
-
-
 const tags = ["All", "Beach", "Heritage", "History", "Nature"];
-
-const tagColors: Record<string, string> = {
-  Beach: "badge-ocean",
-  Heritage: "badge-sand",
-  History: "badge-coral",
-  Nature: "badge-ocean",
-};
 
 export default function DestinationsPage() {
   const { destinations } = useData();
@@ -32,49 +24,61 @@ export default function DestinationsPage() {
   const filtered = activeTag === "All" ? destinations : destinations.filter((d) => d.tag === activeTag);
 
   return (
-    <>
-      {/* Hero */}
-      <section className="relative pt-36 pb-24 ocean-bg overflow-hidden">
-        <div className="absolute inset-0 opacity-20">
-          <Image src="/dest-casuarina.png" alt="Destinations" fill className="object-cover" />
+    <div className="min-h-screen bg-slate-50">
+      {/* ── HERO SECTION ── */}
+      <section className="relative pt-32 pb-20 bg-slate-900 overflow-hidden">
+        <div className="absolute inset-0 z-0">
+          <Image
+            src="/dest-casuarina.png"
+            alt="Destinations"
+            fill
+            priority
+            className="object-cover object-center scale-105"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-900/70 to-slate-900/80" />
         </div>
-        <div className="absolute inset-0 bg-gradient-to-b from-navy/80 to-ocean-500/60" />
+
         <div className="container-custom relative z-10 text-center">
-          <motion.div initial="hidden" animate="visible">
-            <motion.span variants={fadeUp} className="section-label text-teal-lighter">Explore Jaffna</motion.span>
-            <motion.h1 variants={fadeUp} custom={1} className="font-display font-black text-white text-5xl md:text-7xl mt-3 mb-5">
-              Destinations
+          <motion.div initial="hidden" animate="visible" className="flex flex-col items-center">
+            <motion.div variants={fadeInUp} custom={0} className="hero-badge mb-4">
+              <Compass className="w-4 h-4 text-cyan-400" />
+              <span>Explore Jaffna</span>
+            </motion.div>
+            <motion.h1
+              variants={fadeInUp}
+              custom={1}
+              className="font-black text-white text-4xl sm:text-6xl tracking-tight mb-4"
+            >
+              Top <span className="text-gradient-cyan">Destinations</span>
             </motion.h1>
-            <motion.p variants={fadeUp} custom={2} className="text-white/75 text-lg max-w-xl mx-auto leading-relaxed">
-              From pristine beaches to ancient temples — discover the most breathtaking spots in Jaffna.
+            <motion.p
+              variants={fadeInUp}
+              custom={2}
+              className="text-slate-300 text-base sm:text-lg max-w-xl mx-auto leading-relaxed"
+            >
+              From shallow turquoise beaches to 500-year-old Dutch forts and sacred Kovils — explore Jaffna's iconic spots.
             </motion.p>
           </motion.div>
         </div>
-        <div className="absolute bottom-0 left-0 w-full overflow-hidden leading-[0]">
-          <svg viewBox="0 0 1440 60" className="w-full" preserveAspectRatio="none">
-            <path fill="#F8F9FA" d="M0,30 C360,60 1080,0 1440,30 L1440,60 L0,60 Z" />
-          </svg>
-        </div>
       </section>
 
-      {/* Filter + Grid */}
-      <section className="py-16 bg-pearl">
+      {/* ── FILTER & DESTINATION CARDS ── */}
+      <section className="py-16">
         <div className="container-custom">
-          {/* Filter tabs */}
-          <div className="flex items-center gap-3 mb-12 overflow-x-auto pb-3 pt-1 no-scrollbar -mx-4 px-4 md:mx-0 md:px-0 scroll-smooth">
-            <div className="flex items-center gap-2 shrink-0 pr-2 border-r border-gray-150 mr-1">
-              <Filter className="w-4 h-4 text-ocean-500" />
-              <span className="text-xs font-outfit font-700 uppercase tracking-wider text-gray-400 hidden sm:inline">Filter</span>
+          {/* Category Filter Chips */}
+          <div className="flex items-center gap-2 mb-12 overflow-x-auto pb-2 no-scrollbar justify-start sm:justify-center">
+            <div className="flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-slate-400 mr-2 shrink-0">
+              <Filter className="w-4 h-4 text-blue-600" />
+              <span>Filter:</span>
             </div>
             {tags.map((tag) => (
               <button
                 key={tag}
-                id={`filter-${tag.toLowerCase()}`}
                 onClick={() => setActiveTag(tag)}
-                className={`px-5 py-2.5 rounded-full font-outfit font-600 text-sm transition-all duration-300 shrink-0 ${
+                className={`px-5 py-2.5 rounded-full font-bold text-sm transition-all shrink-0 ${
                   activeTag === tag
-                    ? "bg-ocean-500 text-white shadow-ocean scale-105"
-                    : "bg-white text-gray-500 hover:bg-teal-lighter hover:text-ocean-500 border border-gray-100"
+                    ? "bg-gradient-to-r from-blue-600 to-cyan-500 text-white shadow-lg shadow-blue-500/25 scale-105"
+                    : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200"
                 }`}
               >
                 {tag}
@@ -82,49 +86,80 @@ export default function DestinationsPage() {
             ))}
           </div>
 
-          {/* Cards */}
-          <AnimatePresence mode="popLayout">
-            <motion.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7">
-              {filtered.map((d, i) => (
+          {/* Grid of Destination Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            {filtered.length === 0 ? (
+              <div className="col-span-full text-center py-12 bg-white rounded-3xl border border-slate-200 p-8 shadow-card">
+                <p className="text-slate-500 font-extrabold text-lg">No spots found in this category.</p>
+                <p className="text-slate-400 text-xs mt-1">Please try choosing another category filter above.</p>
+              </div>
+            ) : (
+              filtered.map((d, i) => (
                 <motion.div
                   key={d.id}
-                  layout
-                  initial={{ opacity: 0, scale: 0.98 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.98 }}
-                  transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-                  className="bg-white rounded-2xl overflow-hidden shadow-card card-hover group"
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.25, delay: i * 0.03 }}
+                  className="bg-white rounded-3xl overflow-hidden shadow-card border border-slate-200/80 card-hover-effect flex flex-col group"
                 >
-                  <div className="relative h-56 img-zoom">
-                    <Image src={d.img} alt={d.name} fill className="object-cover" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-navy/60 via-transparent to-transparent" />
-                    <span className={`absolute top-3 left-3 badge ${tagColors[d.tag] || "badge-ocean"} bg-white/90 backdrop-blur-sm border-0`}>
-                      {d.tag}
-                    </span>
-                    <div className="absolute top-3 right-3 flex items-center gap-1 bg-white/90 backdrop-blur-sm rounded-full px-2.5 py-1">
-                      <Star className="w-3.5 h-3.5 fill-sand text-sand" />
-                      <span className="text-navy text-xs font-outfit font-bold">{d.rating}</span>
+                  {/* Photo Header */}
+                  <div className="relative h-64 w-full overflow-hidden">
+                    <Image
+                      src={d.img}
+                      alt={d.name}
+                      fill
+                      className="object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent" />
+                    
+                    {/* Badge */}
+                    <div className="absolute top-4 left-4">
+                      <span className="bg-white/90 backdrop-blur-md text-slate-900 font-bold text-xs px-3 py-1.5 rounded-full shadow-md">
+                        {d.tag}
+                      </span>
+                    </div>
+
+                    {/* Rating */}
+                    <div className="absolute top-4 right-4 bg-slate-900/80 backdrop-blur-md text-white text-xs font-extrabold px-3 py-1.5 rounded-full flex items-center gap-1">
+                      <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                      <span>{d.rating}</span>
+                    </div>
+
+                    <div className="absolute bottom-4 left-4 right-4 text-white">
+                      <h3 className="font-extrabold text-2xl leading-tight mb-1">{d.name}</h3>
+                      <div className="flex items-center gap-2 text-xs text-slate-300">
+                        <MapPin className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+                        <span>{d.distance} from Jaffna</span>
+                      </div>
                     </div>
                   </div>
-                  <div className="p-6">
-                    <h2 className="font-display font-bold text-navy text-xl mb-2">{d.name}</h2>
-                    <p className="text-gray-500 text-sm leading-relaxed mb-4">{d.desc}</p>
-                    <div className="flex items-center justify-between pt-4 border-t border-gray-50">
-                      <div className="flex items-center gap-4 text-xs text-gray-400">
-                        <span className="flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5 text-coral" />{d.distance}</span>
-                        <span className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5 text-teal-DEFAULT" />{d.duration}</span>
+
+                  {/* Body Content */}
+                  <div className="p-6 flex flex-col justify-between flex-1 bg-white">
+                    <p className="text-slate-500 text-sm leading-relaxed mb-6">
+                      {d.desc}
+                    </p>
+
+                    <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
+                      <div className="flex items-center gap-1.5 text-slate-400 text-xs font-semibold">
+                        <Clock className="w-4 h-4 text-blue-600" />
+                        <span>{d.duration}</span>
                       </div>
-                      <Link href="/booking" className="flex items-center gap-1.5 text-ocean-500 font-outfit font-600 text-sm hover:text-teal-DEFAULT transition-colors">
-                        Book <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                      <Link
+                        href="/booking"
+                        className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs px-5 py-2.5 rounded-full transition-colors flex items-center gap-1.5 shadow-md shadow-blue-600/20"
+                      >
+                        <span>Book Spot</span>
+                        <ArrowRight className="w-3.5 h-3.5" />
                       </Link>
                     </div>
                   </div>
                 </motion.div>
-              ))}
-            </motion.div>
-          </AnimatePresence>
+              ))
+            )}
+          </div>
         </div>
       </section>
-    </>
+    </div>
   );
 }

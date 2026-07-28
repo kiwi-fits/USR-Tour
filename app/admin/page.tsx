@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
@@ -9,37 +9,130 @@ import {
   Destination,
   Experience,
   PackageItem,
-  GalleryItem,
-  ContactDetails,
 } from "@/lib/DataContext";
 import {
   Lock,
   Plus,
   Edit3,
   Trash2,
-  RefreshCw,
   LogOut,
   MapPin,
   Compass,
   Package as PackageIcon,
   Image as ImageIcon,
   Phone,
-  CheckCircle,
+  CheckCircle2,
   X,
   Star,
   ShieldAlert,
-  Sparkles,
-  Tag,
-  Clock,
-  DollarSign,
-  Users,
-  FileText,
   Calendar,
-  Check,
-  Mail,
   ChevronDown,
   ChevronUp,
+  Search,
+  Upload,
 } from "lucide-react";
+
+/* ── REUSABLE LOCAL DEVICE IMAGE UPLOADER COMPONENT ── */
+function ImageUploader({
+  value,
+  onChange,
+  name = "img",
+  label = "Upload Image from Device",
+}: {
+  value: string;
+  onChange: (val: string) => void;
+  name?: string;
+  label?: string;
+}) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        alert("File size too large. Please select an image under 5MB.");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        if (reader.result) {
+          onChange(reader.result as string);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  return (
+    <div>
+      <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
+        {label}
+      </label>
+
+      {/* Hidden form input holding the Data URL value */}
+      <input type="hidden" name={name} value={value} />
+
+      <div className="space-y-3">
+        {value ? (
+          <div className="relative h-44 w-full rounded-2xl overflow-hidden border border-slate-200 bg-slate-100 group shadow-xs">
+            <img src={value} alt="Uploaded Preview" className="w-full h-full object-cover" />
+            <div className="absolute inset-0 bg-slate-950/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="px-4 py-2.5 rounded-xl bg-white text-slate-900 font-bold text-xs shadow-md flex items-center gap-1.5 hover:bg-slate-100 transition-colors"
+              >
+                <Upload className="w-4 h-4 text-blue-600" />
+                <span>Upload New</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => onChange("")}
+                className="px-4 py-2.5 rounded-xl bg-rose-600 text-white font-bold text-xs shadow-md flex items-center gap-1.5 hover:bg-rose-700 transition-colors"
+              >
+                <Trash2 className="w-4 h-4" />
+                <span>Remove</span>
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div
+            onClick={() => fileInputRef.current?.click()}
+            className="border-2 border-dashed border-slate-300 hover:border-blue-500 bg-slate-50 hover:bg-blue-50/50 rounded-2xl p-6 text-center cursor-pointer transition-all flex flex-col items-center justify-center gap-2 group"
+          >
+            <div className="w-12 h-12 rounded-2xl bg-white border border-slate-200 flex items-center justify-center text-slate-400 group-hover:text-blue-600 group-hover:scale-110 transition-all shadow-xs">
+              <Upload className="w-6 h-6" />
+            </div>
+            <div>
+              <span className="font-bold text-slate-800 text-sm block">Choose image from your local device</span>
+              <span className="text-xs text-slate-400 font-medium">Supports PNG, JPG, WEBP & SVG</span>
+            </div>
+          </div>
+        )}
+
+        {/* Hidden File Picker */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          onChange={handleFileChange}
+          className="hidden"
+        />
+
+        {/* Option to paste image URL */}
+        <div className="flex items-center gap-2">
+          <input
+            type="text"
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder="Or paste an image URL (e.g. /dest-casuarina.png)"
+            className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none focus:border-blue-500"
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function AdminPage() {
   const [username, setUsername] = useState("admin");
@@ -47,14 +140,11 @@ export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(true);
   const [passError, setPassError] = useState(false);
 
-  React.useEffect(() => {
-    const storedAuth = localStorage.getItem("usr_admin_auth");
-    if (storedAuth === "true") {
-      setIsAuthenticated(true);
-    } else if (storedAuth === "false") {
-      setIsAuthenticated(false);
-    }
+  useEffect(() => {
+    const auth = localStorage.getItem("usr_admin_auth");
+    if (auth === "true") setIsAuthenticated(true);
   }, []);
+
   const [activeTab, setActiveTab] = useState<"bookings" | "destinations" | "experiences" | "packages" | "gallery" | "contact">("bookings");
 
   const {
@@ -64,8 +154,11 @@ export default function AdminPage() {
     gallery, addGalleryItem, deleteGalleryItem,
     contact, updateContact,
     bookings, updateBookingStatus, deleteBooking,
-    resetToDefaults,
   } = useData();
+
+  // Search & Filter State
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
 
   // Modals state
   const [destModal, setDestModal] = useState<{ open: boolean; item?: Destination }>({ open: false });
@@ -76,18 +169,30 @@ export default function AdminPage() {
   const [galModal, setGalModal] = useState<{ open: boolean }>({ open: false });
   const [toast, setToast] = useState<string | null>(null);
 
-  const isAnyModalOpen = destModal.open || expModal.open || pkgModal.open || galModal.open;
+  // Local Device Upload States
+  const [destImg, setDestImg] = useState("");
+  const [expImg, setExpImg] = useState("");
+  const [pkgImg, setPkgImg] = useState("");
+  const [galImg, setGalImg] = useState("");
 
-  React.useEffect(() => {
-    if (isAnyModalOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
+  useEffect(() => {
+    if (destModal.open) setDestImg(destModal.item?.img || "/dest-casuarina.png");
+  }, [destModal]);
+
+  useEffect(() => {
+    if (expModal.open) setExpImg(expModal.item?.img || "/exp-sunset.png");
+  }, [expModal]);
+
+  useEffect(() => {
+    if (pkgModal.open) {
+      setPkgImg(pkgModal.item?.img || "/pkg-premium.png");
+      setPkgFeatures(pkgModal.item?.features || ["Luxury Hotel Stay", "Private AC Car", "Tamil Guide"]);
     }
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [isAnyModalOpen]);
+  }, [pkgModal]);
+
+  useEffect(() => {
+    if (galModal.open) setGalImg("/dest-casuarina.png");
+  }, [galModal]);
 
   const showToast = (msg: string) => {
     setToast(msg);
@@ -106,72 +211,74 @@ export default function AdminPage() {
     }
   };
 
-  // ─── LOGIN OVERLAY ──────────────────────────────────────────────────────────
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen pt-28 pb-20 flex items-center justify-center px-4 ocean-bg">
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4">
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="glass-dark p-8 md:p-12 rounded-3xl max-w-md w-full border border-teal-light/30 shadow-2xl text-center"
+          className="bg-slate-900 border border-slate-800 p-8 rounded-3xl max-w-md w-full text-white shadow-2xl"
         >
-          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-teal-DEFAULT to-ocean-500 flex items-center justify-center mx-auto mb-6 shadow-ocean">
-            <Lock className="w-8 h-8 text-white" />
+          <div className="flex flex-col items-center text-center mb-8">
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-blue-600 to-cyan-400 flex items-center justify-center text-white shadow-lg mb-4">
+              <Lock className="w-7 h-7" />
+            </div>
+            <h1 className="font-extrabold text-2xl tracking-tight">Admin Portal Login</h1>
+            <p className="text-slate-400 text-sm mt-1">Sign in to manage Jaffna tourism agency operations</p>
           </div>
-          <h1 className="font-display font-black text-white text-3xl mb-2">Admin Portal</h1>
-          <p className="text-white/70 text-sm mb-6">Enter your username & password to access the management panel.</p>
 
-          <form onSubmit={handleLogin} className="space-y-4 text-left">
+          <form onSubmit={handleLogin} className="space-y-4">
             <div>
-              <label className="text-xs font-bold text-teal-light block mb-1.5 uppercase tracking-wider">
-                Username
-              </label>
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">Username</label>
               <input
                 type="text"
-                placeholder="Username (admin)"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                className="w-full px-5 py-3.5 rounded-2xl bg-white/10 text-white placeholder-white/40 border border-white/20 focus:border-teal-DEFAULT outline-none transition-all text-sm font-medium"
-                required
+                placeholder="admin"
+                className="w-full px-4 py-3.5 bg-slate-950 border border-slate-800 rounded-2xl text-white font-semibold focus:outline-none focus:border-blue-500"
               />
             </div>
-
             <div>
-              <label className="text-xs font-bold text-teal-light block mb-1.5 uppercase tracking-wider">
-                Password
-              </label>
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">Password</label>
               <input
                 type="password"
-                placeholder="Password (admin123)"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-5 py-3.5 rounded-2xl bg-white/10 text-white placeholder-white/40 border border-white/20 focus:border-teal-DEFAULT outline-none transition-all text-sm font-medium"
-                required
+                placeholder="••••••••"
+                className="w-full px-4 py-3.5 bg-slate-950 border border-slate-800 rounded-2xl text-white font-semibold focus:outline-none focus:border-blue-500"
               />
-              {passError && (
-                <p className="text-rose-300 text-xs mt-2 flex items-center gap-1">
-                  <ShieldAlert className="w-3.5 h-3.5 shrink-0" /> Invalid credentials. Use 'admin' & 'admin123'
-                </p>
-              )}
             </div>
 
-            <button type="submit" className="btn-primary w-full py-4 rounded-2xl justify-center text-base font-bold shadow-ocean mt-2">
-              Login to Dashboard
+            {passError && (
+              <div className="p-3 bg-rose-500/10 border border-rose-500/30 rounded-xl text-rose-400 text-xs font-bold flex items-center gap-2">
+                <ShieldAlert className="w-4 h-4 shrink-0" />
+                <span>Invalid credentials! Try admin / admin123</span>
+              </div>
+            )}
+
+            <button
+              type="submit"
+              className="w-full py-4 rounded-2xl bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 font-extrabold text-white shadow-lg shadow-blue-600/30 transition-transform active:scale-95 mt-2"
+            >
+              Sign In to Dashboard
             </button>
           </form>
 
-          <div className="mt-6 p-3 bg-white/5 rounded-2xl border border-white/10 text-xs text-white/60 space-y-1">
-            <p><strong>Sample Credentials:</strong></p>
-            <p>Username: <code className="text-teal-lighter font-mono font-bold">admin</code></p>
-            <p>Password: <code className="text-teal-lighter font-mono font-bold">admin123</code></p>
+          <div className="mt-6 pt-6 border-t border-slate-800/80 text-center text-xs text-slate-500 font-medium">
+            Demo Credentials: <span className="text-cyan-400 font-mono">admin</span> / <span className="text-cyan-400 font-mono">admin123</span>
           </div>
         </motion.div>
       </div>
     );
   }
 
+  // Summary counts
+  const pendingCount = bookings.filter((b) => b.status === "Pending").length;
+  const confirmedCount = bookings.filter((b) => b.status === "Confirmed").length;
+  const completedCount = bookings.filter((b) => b.status === "Completed").length;
+
   return (
-    <div className="min-h-screen pt-10 pb-20 bg-pearl">
+    <div className="min-h-screen bg-slate-50 text-slate-900 pb-40 md:pb-24">
       {/* Toast Notification */}
       <AnimatePresence>
         {toast && (
@@ -179,286 +286,375 @@ export default function AdminPage() {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="fixed top-24 right-6 z-50 bg-navy text-white px-5 py-3.5 rounded-2xl shadow-2xl border border-teal-DEFAULT flex items-center gap-3"
+            className="fixed top-6 right-6 z-50 bg-slate-900 text-white px-5 py-3.5 rounded-2xl shadow-2xl border border-slate-800 flex items-center gap-3"
           >
-            <CheckCircle className="w-5 h-5 text-teal-DEFAULT" />
-            <span className="font-outfit text-sm font-semibold">{toast}</span>
+            <CheckCircle2 className="w-5 h-5 text-cyan-400" />
+            <span className="text-sm font-bold">{toast}</span>
           </motion.div>
         )}
       </AnimatePresence>
 
-      <div className="container-custom">
-        {/* Top Bar with Logo in top left corner */}
-        <div className="flex items-center justify-start mb-6">
-          <Link href="/" className="flex flex-col items-center group">
-            <span className="font-display font-extrabold gradient-india text-2xl leading-none uppercase tracking-wider">
-              USR
+      {/* ── TOP MENU BAR (GLASSMORPHISM & RESPONSIVE FIT) ── */}
+      <header className="w-full bg-white/80 backdrop-blur-xl border-b border-slate-200/70 px-4 sm:px-8 py-3.5 flex items-center justify-between sticky top-0 z-30 shadow-xs">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <Link href="/" className="flex items-center gap-2 group">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 to-cyan-400 flex items-center justify-center text-white shadow-md">
+              <Compass className="w-5 h-5" />
+            </div>
+            <span className="font-black text-lg sm:text-xl text-slate-900 tracking-tight">
+              USR <span className="text-cyan-500">TOURS</span>
             </span>
-            <div className="flex justify-between w-full font-display font-medium text-teal-DEFAULT text-[0.65rem] leading-none uppercase mt-1">
-              <span>T</span><span>O</span><span>U</span><span>R</span><span>S</span>
-            </div>
           </Link>
+          <span className="hidden sm:inline-block text-[0.7rem] font-extrabold text-slate-600 bg-slate-100 px-3 py-1 rounded-full border border-slate-200/80">
+            Admin Portal
+          </span>
         </div>
-        <div className="flex overflow-x-auto gap-2 p-2 bg-gray-100/80 rounded-2xl mb-8 no-scrollbar scroll-smooth">
-          {[
-            { id: "bookings", label: "Booked Tours", count: bookings.length, icon: Calendar },
-            { id: "destinations", label: "Destinations", count: destinations.length, icon: MapPin },
-            { id: "experiences", label: "Experiences", count: experiences.length, icon: Compass },
-            { id: "packages", label: "Tour Packages", count: packages.length, icon: PackageIcon },
-            { id: "gallery", label: "Gallery Photos", count: gallery.length, icon: ImageIcon },
-            { id: "contact", label: "Contact Details", count: 1, icon: Phone },
-          ].map((tab) => {
-            const Icon = tab.icon;
-            const active = activeTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                onClick={(e) => {
-                  setActiveTab(tab.id as any);
-                  e.currentTarget.scrollIntoView({
-                    behavior: "smooth",
-                    inline: "start",
-                    block: "nearest",
-                  });
-                }}
-                className={`flex items-center gap-2.5 px-5 py-3 rounded-xl font-outfit text-sm font-bold transition-all shrink-0 ${
-                  active
-                    ? "bg-navy text-white shadow-md border-l-4 border-l-teal-DEFAULT -translate-x-1"
-                    : "text-gray-500 hover:text-navy hover:bg-white/50"
-                }`}
-              >
-                <Icon className={`w-4 h-4 ${active ? "text-teal-light" : "text-gray-400"}`} />
-                {tab.label}
-                <span className={`px-2 py-0.5 rounded-full text-xs font-mono ${active ? "bg-teal-DEFAULT text-white" : "bg-gray-200 text-gray-600"}`}>
-                  {tab.count}
+
+        <button
+          onClick={() => {
+            setIsAuthenticated(false);
+            localStorage.setItem("usr_admin_auth", "false");
+            showToast("Signed out successfully");
+          }}
+          className="px-3.5 sm:px-4 py-2 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center gap-1.5 sm:gap-2 transition-colors border border-slate-200/80"
+        >
+          <LogOut className="w-4 h-4 text-slate-500 shrink-0" />
+          <span>Sign Out</span>
+        </button>
+      </header>
+
+      {/* Main Admin Dashboard Container */}
+      <div className="container-custom pt-5 sm:pt-8">
+        
+        {/* Desktop Navigation Tabs */}
+        <div className="hidden md:flex items-center justify-between gap-4 mb-8 bg-white p-2 rounded-3xl border border-slate-200/80 shadow-xs">
+          <div className="flex items-center gap-2 overflow-x-auto w-full">
+            <button
+              onClick={() => setActiveTab("bookings")}
+              className={`px-5 py-3 rounded-2xl font-bold text-sm flex items-center gap-2 transition-all shrink-0 ${
+                activeTab === "bookings"
+                  ? "bg-blue-600 text-white shadow-md shadow-blue-600/20"
+                  : "text-slate-600 hover:bg-slate-100"
+              }`}
+            >
+              <Calendar className="w-4 h-4" />
+              <span>Bookings</span>
+              {pendingCount > 0 && (
+                <span className="ml-1 px-2 py-0.5 text-xs font-extrabold bg-rose-500 text-white rounded-full">
+                  {pendingCount}
                 </span>
-              </button>
-            );
-          })}
+              )}
+            </button>
+
+            <button
+              onClick={() => setActiveTab("destinations")}
+              className={`px-5 py-3 rounded-2xl font-bold text-sm flex items-center gap-2 transition-all shrink-0 ${
+                activeTab === "destinations"
+                  ? "bg-blue-600 text-white shadow-md shadow-blue-600/20"
+                  : "text-slate-600 hover:bg-slate-100"
+              }`}
+            >
+              <MapPin className="w-4 h-4" />
+              <span>Spots</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab("experiences")}
+              className={`px-5 py-3 rounded-2xl font-bold text-sm flex items-center gap-2 transition-all shrink-0 ${
+                activeTab === "experiences"
+                  ? "bg-blue-600 text-white shadow-md shadow-blue-600/20"
+                  : "text-slate-600 hover:bg-slate-100"
+              }`}
+            >
+              <Compass className="w-4 h-4" />
+              <span>Experiences</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab("packages")}
+              className={`px-5 py-3 rounded-2xl font-bold text-sm flex items-center gap-2 transition-all shrink-0 ${
+                activeTab === "packages"
+                  ? "bg-blue-600 text-white shadow-md shadow-blue-600/20"
+                  : "text-slate-600 hover:bg-slate-100"
+              }`}
+            >
+              <PackageIcon className="w-4 h-4" />
+              <span>Tours</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab("gallery")}
+              className={`px-5 py-3 rounded-2xl font-bold text-sm flex items-center gap-2 transition-all shrink-0 ${
+                activeTab === "gallery"
+                  ? "bg-blue-600 text-white shadow-md shadow-blue-600/20"
+                  : "text-slate-600 hover:bg-slate-100"
+              }`}
+            >
+              <ImageIcon className="w-4 h-4" />
+              <span>Photos</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab("contact")}
+              className={`px-5 py-3 rounded-2xl font-bold text-sm flex items-center gap-2 transition-all shrink-0 ${
+                activeTab === "contact"
+                  ? "bg-blue-600 text-white shadow-md shadow-blue-600/20"
+                  : "text-slate-600 hover:bg-slate-100"
+              }`}
+            >
+              <Phone className="w-4 h-4" />
+              <span>Agency Info</span>
+            </button>
+          </div>
         </div>
 
-        {/* ─── TAB CONTENTS ─── */}
-
-        {/* 0. BOOKED TOURS TAB */}
+        {/* Tab 1: BOOKINGS TAB */}
         {activeTab === "bookings" && (
-          <div>
-            <div className="flex items-center justify-between mb-6 bg-white/60 p-4 rounded-2xl border border-gray-100">
-              <div>
-                <h2 className="font-display font-bold text-navy text-xl">Booked Tours & Reservations ({bookings.length})</h2>
-                <p className="text-gray-400 text-xs">View incoming tour bookings, customer contact details, and update reservation status.</p>
+          <div className="space-y-6">
+            {/* Stat Summary Cards (Clean Vertical Stacked Layout - No Truncation) */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
+              {/* Card 1: Total */}
+              <div className="bg-white p-4 sm:p-5 rounded-3xl border border-slate-200/80 shadow-xs flex flex-col justify-between">
+                <div className="flex items-center justify-between gap-2 mb-2">
+                  <span className="text-[0.65rem] sm:text-xs font-black uppercase tracking-wider text-slate-400">Total Bookings</span>
+                  <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-black text-sm shrink-0">
+                    {bookings.length}
+                  </div>
+                </div>
+                <div className="font-extrabold text-slate-900 text-base sm:text-xl tracking-tight">
+                  {bookings.length} Requests
+                </div>
+              </div>
+
+              {/* Card 2: Confirmed */}
+              <div className="bg-white p-4 sm:p-5 rounded-3xl border border-slate-200/80 shadow-xs flex flex-col justify-between">
+                <div className="flex items-center justify-between gap-2 mb-2">
+                  <span className="text-[0.65rem] sm:text-xs font-black uppercase tracking-wider text-slate-400">Confirmed</span>
+                  <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-black text-sm shrink-0">
+                    {confirmedCount}
+                  </div>
+                </div>
+                <div className="font-extrabold text-emerald-600 text-base sm:text-xl tracking-tight">
+                  {confirmedCount} Active
+                </div>
+              </div>
+
+              {/* Card 3: Pending */}
+              <div className="bg-white p-4 sm:p-5 rounded-3xl border border-slate-200/80 shadow-xs flex flex-col justify-between">
+                <div className="flex items-center justify-between gap-2 mb-2">
+                  <span className="text-[0.65rem] sm:text-xs font-black uppercase tracking-wider text-slate-400">Pending</span>
+                  <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center font-black text-sm shrink-0">
+                    {pendingCount}
+                  </div>
+                </div>
+                <div className="font-extrabold text-amber-600 text-base sm:text-xl tracking-tight">
+                  {pendingCount} Review
+                </div>
+              </div>
+
+              {/* Card 4: Completed */}
+              <div className="bg-white p-4 sm:p-5 rounded-3xl border border-slate-200/80 shadow-xs flex flex-col justify-between">
+                <div className="flex items-center justify-between gap-2 mb-2">
+                  <span className="text-[0.65rem] sm:text-xs font-black uppercase tracking-wider text-slate-400">Completed</span>
+                  <div className="w-8 h-8 rounded-xl bg-cyan-50 text-cyan-600 flex items-center justify-center font-black text-sm shrink-0">
+                    {completedCount}
+                  </div>
+                </div>
+                <div className="font-extrabold text-slate-900 text-base sm:text-xl tracking-tight">
+                  {completedCount} Finished
+                </div>
               </div>
             </div>
 
-            {bookings.length === 0 ? (
-              <div className="bg-white rounded-3xl p-12 text-center border border-gray-100 shadow-card">
-                <Calendar className="w-12 h-12 text-teal-DEFAULT mx-auto mb-3 opacity-50" />
-                <h3 className="font-display font-bold text-navy text-lg mb-1">No Booked Tours Yet</h3>
-                <p className="text-gray-400 text-xs">When users submit a booking on the site, their reservations will appear here.</p>
+            {/* Bookings Search & Filter Controls */}
+            <div className="bg-white p-4 sm:p-5 rounded-3xl border border-slate-200/80 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div className="relative flex-1">
+                <Search className="w-5 h-5 text-slate-400 absolute left-4 top-3.5" />
+                <input
+                  type="text"
+                  placeholder="Search customer, phone or package..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl font-semibold text-sm focus:outline-none focus:border-blue-500"
+                />
               </div>
-            ) : (
-              <div className="space-y-3">
-                {bookings.map((b) => {
+
+              <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 md:pb-0">
+                {["all", "Pending", "Confirmed", "Completed", "Cancelled"].map((st) => (
+                  <button
+                    key={st}
+                    onClick={() => setStatusFilter(st)}
+                    className={`px-4 py-2 rounded-full font-bold text-xs uppercase tracking-wider transition-colors whitespace-nowrap ${
+                      statusFilter === st
+                        ? "bg-slate-900 text-white"
+                        : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                    }`}
+                  >
+                    {st}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Bookings List */}
+            <div className="space-y-4">
+              {bookings
+                .filter((b) => {
+                  const matchesStatus = statusFilter === "all" || b.status === statusFilter;
+                  const matchesSearch =
+                    (b.fullName || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+                    (b.email || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+                    (b.phone || "").includes(searchQuery) ||
+                    (b.packageName || "").toLowerCase().includes(searchQuery.toLowerCase());
+                  return matchesStatus && matchesSearch;
+                })
+                .map((b) => {
                   const isExpanded = expandedBookingId === b.id;
                   return (
                     <div
                       key={b.id}
-                      className={`bg-white rounded-3xl shadow-card border transition-all duration-300 overflow-hidden ${
-                        isExpanded ? "border-teal-DEFAULT ring-2 ring-teal-DEFAULT/20" : "border-gray-100 hover:border-gray-200"
-                      }`}
+                      className="bg-white rounded-3xl border border-slate-200/80 p-4 sm:p-6 shadow-card transition-all"
                     >
-                      {/* Collapsed Card Header */}
-                      <div
-                        onClick={() => setExpandedBookingId(isExpanded ? null : b.id)}
-                        className="p-5 flex items-center justify-between gap-4 cursor-pointer select-none hover:bg-gray-50/60 transition-colors"
-                      >
-                        <div className="flex items-center gap-3 flex-wrap min-w-0">
-                          <span className="font-mono text-xs font-bold px-2.5 py-1 rounded-lg bg-teal-lighter text-ocean-600 border border-teal-DEFAULT/20 shrink-0">
-                            {b.id}
-                          </span>
-                          <h3 className="font-display font-bold text-navy text-base md:text-lg truncate">
-                            {b.fullName}
-                          </h3>
-                          <span className="text-xs font-semibold text-ocean-600 bg-ocean-50 px-2.5 py-0.5 rounded-md border border-ocean-100 hidden sm:inline-block">
-                            {b.packageName}
-                          </span>
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div className="flex items-start gap-3 sm:gap-4">
+                          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center font-extrabold text-lg sm:text-xl shrink-0">
+                            {(b.fullName || "G").charAt(0)}
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <h3 className="font-extrabold text-slate-900 text-base sm:text-lg">{b.fullName}</h3>
+                              <span
+                                className={`text-[0.62rem] font-black uppercase px-2.5 py-0.5 rounded-full ${
+                                  b.status === "Confirmed"
+                                    ? "bg-emerald-100 text-emerald-700"
+                                    : b.status === "Pending"
+                                    ? "bg-amber-100 text-amber-800"
+                                    : b.status === "Completed"
+                                    ? "bg-cyan-100 text-cyan-800"
+                                    : "bg-rose-100 text-rose-700"
+                                }`}
+                              >
+                                {b.status}
+                              </span>
+                            </div>
+                            <p className="text-slate-500 text-xs mt-0.5 font-medium leading-relaxed">
+                              Package: <strong className="text-slate-800">{b.packageName}</strong> · {b.guests} People · Date: {b.date}
+                            </p>
+                          </div>
                         </div>
 
-                        <div className="flex items-center gap-3 shrink-0">
-                          <span className="text-xs text-gray-400 font-medium hidden md:inline-block">
-                            {b.date} • {b.guests} Guests
-                          </span>
-                          <span
-                            className={`text-xs font-bold px-2.5 py-1 rounded-full border ${
-                              b.status === "Confirmed"
-                                ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                                : b.status === "Pending"
-                                ? "bg-amber-50 text-amber-700 border-amber-200"
-                                : b.status === "Completed"
-                                ? "bg-blue-50 text-blue-700 border-blue-200"
-                                : "bg-rose-50 text-rose-700 border-rose-200"
-                            }`}
+                        {/* Actions Row */}
+                        <div className="flex items-center gap-2 pt-3 sm:pt-0 border-t sm:border-t-0 border-slate-100 justify-between sm:justify-end">
+                          <select
+                            value={b.status}
+                            onChange={(e) => {
+                              updateBookingStatus(b.id, e.target.value as any);
+                              showToast(`Booking marked as ${e.target.value}`);
+                            }}
+                            className="px-3 py-2 bg-slate-100 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 cursor-pointer"
                           >
-                            {b.status}
-                          </span>
+                            <option value="Pending">Pending</option>
+                            <option value="Confirmed">Confirmed</option>
+                            <option value="Completed">Completed</option>
+                            <option value="Cancelled">Cancelled</option>
+                          </select>
 
-                          <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-teal-lighter hover:text-navy transition-colors">
-                            {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                          <div className="flex items-center gap-1.5">
+                            <button
+                              onClick={() => setExpandedBookingId(isExpanded ? null : b.id)}
+                              className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600"
+                              title="Toggle details"
+                            >
+                              {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                            </button>
+
+                            <button
+                              onClick={() => {
+                                if (confirm("Delete this booking record?")) {
+                                  deleteBooking(b.id);
+                                  showToast("Booking deleted");
+                                }
+                              }}
+                              className="p-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600"
+                              title="Delete booking"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
                           </div>
                         </div>
                       </div>
 
-                      {/* Expanded Content Details */}
-                      <AnimatePresence>
-                        {isExpanded && (
-                          <motion.div
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: "auto", opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            transition={{ duration: 0.25, ease: "easeInOut" }}
-                            className="border-t border-gray-100 bg-gray-50/40 p-5 space-y-4"
-                          >
-                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 text-xs">
-                              <div className="bg-white p-3 rounded-2xl border border-gray-100 shadow-sm">
-                                <span className="text-gray-400 block font-medium mb-0.5">Email Address</span>
-                                <span className="font-bold text-navy truncate block">{b.email}</span>
-                              </div>
-                              <div className="bg-white p-3 rounded-2xl border border-gray-100 shadow-sm">
-                                <span className="text-gray-400 block font-medium mb-0.5">Phone Number</span>
-                                <span className="font-bold text-navy truncate block">{b.phone}</span>
-                              </div>
-                              <div className="bg-white p-3 rounded-2xl border border-gray-100 shadow-sm">
-                                <span className="text-gray-400 block font-medium mb-0.5">Country / Origin</span>
-                                <span className="font-bold text-navy truncate block">{b.country}</span>
-                              </div>
-                              <div className="bg-white p-3 rounded-2xl border border-gray-100 shadow-sm">
-                                <span className="text-gray-400 block font-medium mb-0.5">Travel Date & Party</span>
-                                <span className="font-bold text-navy truncate block">{b.date} • {b.guests} Guests</span>
-                              </div>
-                            </div>
-
-                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-2 border-t border-gray-100">
-                              <div className="flex items-center gap-2">
-                                <span className="text-xs text-gray-500 font-medium">Selected Package:</span>
-                                <span className="text-xs font-bold text-ocean-600 bg-ocean-50 px-3 py-1 rounded-lg border border-ocean-100">
-                                  {b.packageName} ({b.packagePrice})
-                                </span>
-                                <span className="text-xs text-gray-400 ml-2">Booked on {b.bookedAt}</span>
-                              </div>
-
-                              <div className="flex items-center gap-3 shrink-0">
-                                <div className="flex items-center gap-2">
-                                  <label className="text-xs font-bold text-gray-500">Status:</label>
-                                  <select
-                                    value={b.status}
-                                    onChange={(e) => {
-                                      const newStatus = e.target.value as any;
-                                      updateBookingStatus(b.id, newStatus);
-                                      showToast(`Status updated to ${newStatus}`);
-                                    }}
-                                    className={`text-xs font-bold px-3 py-1.5 rounded-xl border transition-colors cursor-pointer ${
-                                      b.status === "Confirmed"
-                                        ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                                        : b.status === "Pending"
-                                        ? "bg-amber-50 text-amber-700 border-amber-200"
-                                        : b.status === "Completed"
-                                        ? "bg-blue-50 text-blue-700 border-blue-200"
-                                        : "bg-rose-50 text-rose-700 border-rose-200"
-                                    }`}
-                                  >
-                                    <option value="Confirmed">Confirmed</option>
-                                    <option value="Pending">Pending</option>
-                                    <option value="Completed">Completed</option>
-                                    <option value="Cancelled">Cancelled</option>
-                                  </select>
-                                </div>
-
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    if (confirm(`Delete booking record ${b.id} for ${b.fullName}?`)) {
-                                      deleteBooking(b.id);
-                                      showToast("Booking record deleted");
-                                    }
-                                  }}
-                                  className="p-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 transition-colors"
-                                  title="Delete Booking"
-                                >
-                                  <Trash2 className="w-4 h-4" />
-                                </button>
-                              </div>
-                            </div>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
+                      {/* Expanded Details */}
+                      {isExpanded && (
+                        <div className="mt-4 pt-4 border-t border-slate-100 text-xs text-slate-600 grid grid-cols-1 md:grid-cols-3 gap-3 bg-slate-50 p-4 rounded-2xl">
+                          <div><strong>Email:</strong> {b.email}</div>
+                          <div><strong>Phone:</strong> {b.phone}</div>
+                          <div><strong>Country:</strong> {b.country || "Not specified"}</div>
+                        </div>
+                      )}
                     </div>
                   );
                 })}
-              </div>
-            )}
+            </div>
           </div>
         )}
 
-        {/* 1. DESTINATIONS TAB */}
+        {/* Tab 2: DESTINATIONS / SPOTS */}
         {activeTab === "destinations" && (
-          <div>
-            <div className="flex items-center justify-between mb-6 bg-white/60 p-4 rounded-2xl border border-gray-100">
+          <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                <h2 className="font-display font-bold text-navy text-xl">Manage Destinations ({destinations.length})</h2>
-                <p className="text-gray-400 text-xs">Add new spots or edit existing destination details, ratings, and photos.</p>
+                <h2 className="font-extrabold text-slate-900 text-2xl">Jaffna Spots ({destinations.length})</h2>
+                <p className="text-slate-500 text-sm">Add or edit tourist spots displayed on the main website.</p>
               </div>
               <button
                 onClick={() => setDestModal({ open: true })}
-                className="btn-primary py-2.5 px-4 text-xs font-bold shadow-ocean"
+                className="bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-sm px-6 py-3 rounded-2xl shadow-lg shadow-blue-600/30 flex items-center justify-center gap-2 self-start sm:self-auto"
               >
-                <Plus className="w-4 h-4" /> Add Destination
+                <Plus className="w-4 h-4" />
+                <span>Add</span>
               </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
               {destinations.map((d) => (
-                <div key={d.id} className="bg-white rounded-2xl overflow-hidden shadow-card border border-gray-100 hover:border-teal-light transition-all flex flex-col justify-between group">
-                  <div className="relative h-48">
-                    <Image src={d.img} alt={d.name} fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
-                    <div className="absolute top-3 left-3 badge badge-ocean bg-white/95 backdrop-blur-sm shadow-sm">{d.tag}</div>
-                    <div className="absolute top-3 right-3 bg-navy/90 text-white text-xs px-2.5 py-1 rounded-full font-bold flex items-center gap-1 shadow-sm">
-                      <Star className="w-3 h-3 text-sand fill-sand" /> {d.rating}
+                <div key={d.id} className="bg-white rounded-3xl border border-slate-200/80 overflow-hidden shadow-card flex flex-col justify-between group">
+                  <div>
+                    <div className="relative h-52 w-full bg-slate-100">
+                      <img src={d.img} alt={d.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                      <span className="absolute top-3 left-3 bg-white/90 backdrop-blur-md text-slate-900 text-xs font-bold px-3 py-1 rounded-full shadow-md">
+                        {d.tag}
+                      </span>
                     </div>
-                  </div>
-                  <div className="p-5 flex-1 flex flex-col justify-between">
-                    <div>
-                      <div className="flex items-center justify-between mb-1">
-                        <h3 className="font-display font-bold text-navy text-lg">{d.name}</h3>
-                        <span className="text-[0.65rem] font-bold uppercase tracking-wider text-teal-DEFAULT bg-teal-lighter px-2 py-0.5 rounded-full">
-                          Editable
+                    <div className="p-6">
+                      <div className="flex items-center justify-between mb-1.5">
+                        <h3 className="font-extrabold text-slate-900 text-xl">{d.name}</h3>
+                        <span className="text-xs font-bold text-amber-500 flex items-center gap-1">
+                          <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                          {d.rating}
                         </span>
                       </div>
-                      <p className="text-gray-500 text-xs line-clamp-2 mb-4">{d.desc}</p>
+                      <p className="text-slate-500 text-sm leading-relaxed line-clamp-2">{d.desc}</p>
                     </div>
-                    <div>
-                      <div className="flex items-center justify-between text-xs text-gray-400 pt-3 border-t border-gray-100 mb-4">
-                        <span>📍 {d.distance} from Jaffna</span>
-                        <span>⏱️ {d.duration}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => setDestModal({ open: true, item: d })}
-                          className="flex-1 py-2.5 rounded-xl bg-teal-lighter/60 hover:bg-teal-DEFAULT hover:text-white text-ocean-600 text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-sm"
-                        >
-                          <Edit3 className="w-4 h-4" /> Edit Details
-                        </button>
-                        <button
-                          onClick={() => {
-                            if (confirm(`Delete destination "${d.name}"?`)) {
-                              deleteDestination(d.id);
-                              showToast("Destination deleted!");
-                            }
-                          }}
-                          className="p-2.5 rounded-xl bg-rose-50 text-rose-600 hover:bg-rose-100 text-xs font-bold transition-colors"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </div>
+                  </div>
+                  <div className="p-6 pt-0 flex items-center justify-end gap-2 border-t border-slate-100/60 mt-2">
+                    <button
+                      onClick={() => setDestModal({ open: true, item: d })}
+                      className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center gap-1.5"
+                    >
+                      <Edit3 className="w-3.5 h-3.5" /> Edit
+                    </button>
+                    <button
+                      onClick={() => {
+                        if (confirm(`Delete spot "${d.name}"?`)) {
+                          deleteDestination(d.id);
+                          showToast("Spot deleted");
+                        }
+                      }}
+                      className="px-3.5 py-2.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold text-xs"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
                   </div>
                 </div>
               ))}
@@ -466,68 +662,59 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* 2. EXPERIENCES TAB */}
+        {/* Tab 3: EXPERIENCES */}
         {activeTab === "experiences" && (
-          <div>
-            <div className="flex items-center justify-between mb-6 bg-white/60 p-4 rounded-2xl border border-gray-100">
+          <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                <h2 className="font-display font-bold text-navy text-xl">Manage Experiences ({experiences.length})</h2>
-                <p className="text-gray-400 text-xs">Edit prices, group sizes, and highlight tags for curated experiences.</p>
+                <h2 className="font-extrabold text-slate-900 text-2xl">Jaffna Experiences ({experiences.length})</h2>
+                <p className="text-slate-500 text-sm">Manage unique activities like Sunset Boat Tours & Food Trails.</p>
               </div>
               <button
                 onClick={() => setExpModal({ open: true })}
-                className="btn-primary py-2.5 px-4 text-xs font-bold shadow-ocean"
+                className="bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-sm px-6 py-3 rounded-2xl shadow-lg shadow-blue-600/30 flex items-center justify-center gap-2 self-start sm:self-auto"
               >
-                <Plus className="w-4 h-4" /> Add Experience
+                <Plus className="w-4 h-4" />
+                <span>Add</span>
               </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
               {experiences.map((exp) => (
-                <div key={exp.id} className="bg-white rounded-2xl overflow-hidden shadow-card border border-gray-100 hover:border-teal-light transition-all flex flex-col justify-between group">
-                  <div className="relative h-48">
-                    <Image src={exp.img} alt={exp.title} fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
-                    <div className="absolute top-3 left-3 badge badge-ocean bg-white/95">{exp.category}</div>
-                    <div className="absolute bottom-3 right-3 bg-navy text-teal-light text-xs px-3 py-1 rounded-full font-bold shadow-md">
-                      {exp.price}
+                <div key={exp.id} className="bg-white rounded-3xl border border-slate-200/80 overflow-hidden shadow-card flex flex-col justify-between group">
+                  <div>
+                    <div className="relative h-52 w-full bg-slate-100">
+                      <img src={exp.img} alt={exp.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                      <span className="absolute top-3 left-3 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-md">
+                        {exp.category}
+                      </span>
+                      <span className="absolute top-3 right-3 bg-slate-900/80 backdrop-blur-md text-white text-xs font-extrabold px-3 py-1 rounded-full">
+                        {exp.price}
+                      </span>
+                    </div>
+                    <div className="p-6">
+                      <h3 className="font-extrabold text-slate-900 text-xl mb-1.5">{exp.title}</h3>
+                      <p className="text-slate-500 text-sm leading-relaxed line-clamp-2">{exp.desc}</p>
                     </div>
                   </div>
-                  <div className="p-5 flex-1 flex flex-col justify-between">
-                    <div>
-                      <div className="flex items-center justify-between mb-1">
-                        <h3 className="font-display font-bold text-navy text-lg">{exp.title}</h3>
-                        <span className="text-[0.65rem] font-bold uppercase tracking-wider text-teal-DEFAULT bg-teal-lighter px-2 py-0.5 rounded-full">
-                          Editable
-                        </span>
-                      </div>
-                      <p className="text-gray-500 text-xs line-clamp-2 mb-3">{exp.desc}</p>
-                      <div className="flex flex-wrap gap-1 mb-4">
-                        {exp.highlights.map((h, i) => (
-                          <span key={i} className="text-[0.65rem] bg-teal-lighter/80 text-ocean-600 px-2 py-0.5 rounded-md font-medium">
-                            ✓ {h}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2 pt-3 border-t border-gray-100">
-                      <button
-                        onClick={() => setExpModal({ open: true, item: exp })}
-                        className="flex-1 py-2.5 rounded-xl bg-teal-lighter/60 hover:bg-teal-DEFAULT hover:text-white text-ocean-600 text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-sm"
-                      >
-                        <Edit3 className="w-4 h-4" /> Edit Details
-                      </button>
-                      <button
-                        onClick={() => {
-                          if (confirm(`Delete "${exp.title}"?`)) {
-                            deleteExperience(exp.id);
-                            showToast("Experience deleted!");
-                          }
-                        }}
-                        className="p-2.5 rounded-xl bg-rose-50 text-rose-600 hover:bg-rose-100 text-xs font-bold transition-colors"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
+                  <div className="p-6 pt-0 flex items-center justify-end gap-2 border-t border-slate-100/60 mt-2">
+                    <button
+                      onClick={() => setExpModal({ open: true, item: exp })}
+                      className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center gap-1.5"
+                    >
+                      <Edit3 className="w-3.5 h-3.5" /> Edit
+                    </button>
+                    <button
+                      onClick={() => {
+                        if (confirm(`Delete experience "${exp.title}"?`)) {
+                          deleteExperience(exp.id);
+                          showToast("Experience deleted");
+                        }
+                      }}
+                      className="px-3.5 py-2.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold text-xs"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
                   </div>
                 </div>
               ))}
@@ -535,79 +722,67 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* 3. PACKAGES TAB */}
+        {/* Tab 4: TOUR PACKAGES */}
         {activeTab === "packages" && (
-          <div>
-            <div className="flex items-center justify-between mb-6 bg-white/60 p-4 rounded-2xl border border-gray-100">
+          <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                <h2 className="font-display font-bold text-navy text-xl">Manage Tour Packages ({packages.length})</h2>
-                <p className="text-gray-400 text-xs">Update tour pricing, duration, features, and featured banners.</p>
+                <h2 className="font-extrabold text-slate-900 text-2xl">Tour Packages ({packages.length})</h2>
+                <p className="text-slate-500 text-sm">Configure multi-day travel packages for tourists.</p>
               </div>
               <button
-                onClick={() => {
-                  setPkgModal({ open: true });
-                  setPkgFeatures([""]);
-                }}
-                className="btn-primary py-2.5 px-4 text-xs font-bold shadow-ocean"
+                onClick={() => setPkgModal({ open: true })}
+                className="bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-sm px-6 py-3 rounded-2xl shadow-lg shadow-blue-600/30 flex items-center justify-center gap-2 self-start sm:self-auto"
               >
-                <Plus className="w-4 h-4" /> Add Package
+                <Plus className="w-4 h-4" />
+                <span>Add</span>
               </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
               {packages.map((pkg) => (
-                <div key={pkg.id} className="bg-white rounded-2xl overflow-hidden shadow-card border border-gray-100 hover:border-teal-light transition-all flex flex-col justify-between group">
-                  <div className="relative h-48">
-                    <Image src={pkg.img} alt={pkg.name} fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
-                    {pkg.featured && (
-                      <div className="absolute top-3 right-3 badge bg-coral text-white border-none font-bold text-xs shadow-md">
-                        ★ FEATURED
-                      </div>
-                    )}
-                    <div className="absolute bottom-3 left-3 bg-navy/90 text-teal-light text-lg font-black px-3 py-1 rounded-xl shadow-md">
-                      {pkg.price}
-                    </div>
-                  </div>
-                  <div className="p-5 flex-1 flex flex-col justify-between">
-                    <div>
-                      <div className="flex items-center justify-between mb-0.5">
-                        <h3 className="font-display font-bold text-navy text-xl">{pkg.name}</h3>
-                        <span className="text-[0.65rem] font-bold uppercase tracking-wider text-teal-DEFAULT bg-teal-lighter px-2 py-0.5 rounded-full">
-                          Editable
+                <div key={pkg.id} className="bg-white rounded-3xl border border-slate-200/80 overflow-hidden shadow-card p-6 sm:p-7 flex flex-col justify-between">
+                  <div>
+                    <div className="relative h-44 w-full rounded-2xl overflow-hidden mb-5 bg-slate-100">
+                      <img src={pkg.img} alt={pkg.name} className="w-full h-full object-cover" />
+                      {pkg.featured && (
+                        <span className="absolute top-3 right-3 bg-amber-400 text-slate-950 font-black text-[0.65rem] px-3 py-1 rounded-full shadow-md">
+                          FEATURED
                         </span>
-                      </div>
-                      <p className="text-teal-DEFAULT text-xs font-bold mb-3">{pkg.subtitle} · {pkg.duration}</p>
-                      <ul className="space-y-1 mb-4 text-xs text-gray-500">
-                        {pkg.features.slice(0, 4).map((f, i) => (
-                          <li key={i} className="flex items-center gap-1.5">
-                            <span className="w-1.5 h-1.5 rounded-full bg-teal-DEFAULT" /> {f}
-                          </li>
-                        ))}
-                        {pkg.features.length > 4 && <li className="text-gray-400 text-[0.7rem]">+ {pkg.features.length - 4} more features</li>}
-                      </ul>
+                      )}
                     </div>
-                    <div className="flex items-center gap-2 pt-3 border-t border-gray-100">
-                      <button
-                        onClick={() => {
-                          setPkgModal({ open: true, item: pkg });
-                          setPkgFeatures(pkg.features || [""]);
-                        }}
-                        className="flex-1 py-2.5 rounded-xl bg-teal-lighter/60 hover:bg-teal-DEFAULT hover:text-white text-ocean-600 text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-sm"
-                      >
-                        <Edit3 className="w-4 h-4" /> Edit Package
-                      </button>
-                      <button
-                        onClick={() => {
-                          if (confirm(`Delete package "${pkg.name}"?`)) {
-                            deletePackage(pkg.id);
-                            showToast("Package deleted!");
-                          }
-                        }}
-                        className="p-2.5 rounded-xl bg-rose-50 text-rose-600 hover:bg-rose-100 text-xs font-bold transition-colors"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
+                    <span className="text-xs font-bold uppercase tracking-wider text-blue-600">{pkg.subtitle}</span>
+                    <h3 className="font-extrabold text-slate-900 text-2xl mt-0.5">{pkg.name}</h3>
+                    <div className="font-black text-3xl text-slate-900 mt-2 mb-5">{pkg.price} <span className="text-xs text-slate-400 font-normal">/ person</span></div>
+
+                    <ul className="space-y-2.5 mb-6">
+                      {pkg.features.map((feat, idx) => (
+                        <li key={idx} className="flex items-center gap-2 text-xs text-slate-600 font-medium">
+                          <CheckCircle2 className="w-4 h-4 text-blue-600 shrink-0" />
+                          <span>{feat}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <div className="flex items-center justify-end gap-2 pt-4 border-t border-slate-100">
+                    <button
+                      onClick={() => setPkgModal({ open: true, item: pkg })}
+                      className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center gap-1.5"
+                    >
+                      <Edit3 className="w-3.5 h-3.5" /> Edit
+                    </button>
+                    <button
+                      onClick={() => {
+                        if (confirm(`Delete package "${pkg.name}"?`)) {
+                          deletePackage(pkg.id);
+                          showToast("Package deleted");
+                        }
+                      }}
+                      className="px-3.5 py-2.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold text-xs"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
                   </div>
                 </div>
               ))}
@@ -615,40 +790,39 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* 4. GALLERY TAB */}
+        {/* Tab 5: PHOTOS / GALLERY */}
         {activeTab === "gallery" && (
-          <div>
-            <div className="flex items-center justify-between mb-6 bg-white/60 p-4 rounded-2xl border border-gray-100">
+          <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                <h2 className="font-display font-bold text-navy text-xl">Manage Gallery ({gallery.length} Photos)</h2>
-                <p className="text-gray-400 text-xs">Upload or link new photos to display in the public image gallery.</p>
+                <h2 className="font-extrabold text-slate-900 text-2xl">Photo Gallery ({gallery.length})</h2>
+                <p className="text-slate-500 text-sm">Upload images directly from your device to display in the gallery.</p>
               </div>
               <button
                 onClick={() => setGalModal({ open: true })}
-                className="btn-primary py-2.5 px-4 text-xs font-bold shadow-ocean"
+                className="bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-sm px-6 py-3 rounded-2xl shadow-lg shadow-blue-600/30 flex items-center justify-center gap-2 self-start sm:self-auto"
               >
-                <Plus className="w-4 h-4" /> Add Photo
+                <Upload className="w-4 h-4" />
+                <span>Add Photo</span>
               </button>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-              {gallery.map((img) => (
-                <div key={img.id} className="relative group bg-white rounded-2xl overflow-hidden shadow-card border border-gray-100 h-48">
-                  <Image src={img.src} alt={img.alt} fill className="object-cover" />
-                  <div className="absolute inset-0 bg-navy/70 opacity-0 group-hover:opacity-100 transition-opacity p-4 flex flex-col justify-between">
-                    <span className="badge badge-ocean text-[0.65rem] self-start">{img.tag}</span>
-                    <div>
-                      <p className="text-white text-xs font-bold line-clamp-2 mb-2">{img.alt}</p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+              {gallery.map((g) => (
+                <div key={g.id} className="relative h-48 sm:h-52 rounded-3xl overflow-hidden border border-slate-200/80 group bg-slate-100 shadow-xs">
+                  <img src={g.src} alt={g.alt} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                  <div className="absolute inset-0 bg-slate-950/60 opacity-0 group-hover:opacity-100 transition-opacity p-4 flex flex-col justify-between text-white">
+                    <span className="text-xs font-bold bg-blue-600 px-3 py-1 rounded-full self-start shadow-md">{g.tag}</span>
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-xs font-semibold truncate">{g.alt}</span>
                       <button
                         onClick={() => {
-                          if (confirm("Remove photo from gallery?")) {
-                            deleteGalleryItem(img.id);
-                            showToast("Photo removed!");
-                          }
+                          deleteGalleryItem(g.id);
+                          showToast("Photo deleted");
                         }}
-                        className="w-full py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1 transition-colors shadow-sm"
+                        className="p-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white shrink-0"
                       >
-                        <Trash2 className="w-3.5 h-3.5" /> Delete Photo
+                        <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
                   </div>
@@ -658,18 +832,11 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* 5. CONTACT TAB */}
+        {/* Tab 6: AGENCY CONTACT INFO */}
         {activeTab === "contact" && (
-          <div className="max-w-2xl bg-white p-8 rounded-3xl shadow-card border border-gray-100">
-            <div className="flex items-center gap-3 mb-6 pb-4 border-b border-gray-100">
-              <div className="w-10 h-10 rounded-xl bg-teal-lighter text-ocean-600 flex items-center justify-center font-bold">
-                <Phone className="w-5 h-5" />
-              </div>
-              <div>
-                <h2 className="font-display font-bold text-navy text-xl">Edit Business Contact Information</h2>
-                <p className="text-gray-400 text-xs">Updates phone numbers, email address, physical location, and operating hours across the site.</p>
-              </div>
-            </div>
+          <div className="max-w-2xl mx-auto bg-white p-6 sm:p-8 rounded-3xl border border-slate-200/80 shadow-card">
+            <h2 className="font-extrabold text-slate-900 text-2xl mb-1">Agency Details</h2>
+            <p className="text-slate-500 text-sm mb-6">Update contact info displayed on footer & contact page.</p>
 
             <form
               onSubmit={(e) => {
@@ -681,135 +848,84 @@ export default function AdminPage() {
                   address: (form.elements.namedItem("address") as HTMLInputElement).value,
                   hours: (form.elements.namedItem("hours") as HTMLInputElement).value,
                 });
-                showToast("Contact details updated site-wide!");
+                showToast("Agency contact info updated");
               }}
-              className="space-y-5"
+              className="space-y-4 sm:space-y-5"
             >
               <div>
-                <label className="form-label flex items-center gap-2">
-                  <Phone className="w-4 h-4 text-teal-DEFAULT" /> Primary Phone Number
-                </label>
-                <input name="phone" defaultValue={contact.phone} className="input-field" required />
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">Phone Number</label>
+                <input name="phone" defaultValue={contact.phone} required className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl font-semibold text-sm focus:outline-none focus:border-blue-500" />
               </div>
               <div>
-                <label className="form-label flex items-center gap-2">
-                  <Mail className="w-4 h-4 text-teal-DEFAULT" /> Contact Email Address
-                </label>
-                <input name="email" type="email" defaultValue={contact.email} className="input-field" required />
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">Email Address</label>
+                <input name="email" defaultValue={contact.email} required className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl font-semibold text-sm focus:outline-none focus:border-blue-500" />
               </div>
               <div>
-                <label className="form-label flex items-center gap-2">
-                  <MapPin className="w-4 h-4 text-teal-DEFAULT" /> Office / Physical Address
-                </label>
-                <input name="address" defaultValue={contact.address} className="input-field" required />
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">Office Address</label>
+                <input name="address" defaultValue={contact.address} required className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl font-semibold text-sm focus:outline-none focus:border-blue-500" />
               </div>
               <div>
-                <label className="form-label flex items-center gap-2">
-                  <Clock className="w-4 h-4 text-teal-DEFAULT" /> Operating Business Hours
-                </label>
-                <input name="hours" defaultValue={contact.hours} className="input-field" required />
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">Working Hours</label>
+                <input name="hours" defaultValue={contact.hours} required className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl font-semibold text-sm focus:outline-none focus:border-blue-500" />
               </div>
 
-              <button type="submit" className="btn-primary py-3.5 px-8 rounded-2xl font-bold shadow-ocean">
-                Save Site-Wide Contact Info
+              <button
+                type="submit"
+                className="w-full py-4 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-extrabold shadow-lg shadow-blue-600/30 transition-transform active:scale-95 mt-2"
+              >
+                Save Contact Info
               </button>
             </form>
           </div>
         )}
       </div>
 
-      {/* ─── BEAUTIFIED MODALS ─── */}
+      {/* ── MODALS WITH LOCAL DEVICE IMAGE UPLOADER ── */}
 
-      {/* 1. Destination Modal */}
+      {/* Destination Modal */}
       {destModal.open && (
-        <div data-lenis-prevent className="fixed inset-0 z-50 bg-navy/80 backdrop-blur-md flex items-center justify-center p-4">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 10 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            className="bg-white rounded-3xl max-w-xl w-full max-h-[85vh] overflow-hidden shadow-2xl border border-teal-light/40 flex flex-col"
-          >
-            {/* Header */}
-            <div className="bg-gradient-to-r from-navy via-ocean-600 to-teal-DEFAULT text-white px-6 py-5 flex items-center justify-between shrink-0">
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                  {destModal.item ? <Edit3 className="w-5 h-5 text-teal-light" /> : <Plus className="w-5 h-5 text-teal-light" />}
-                </div>
-                <div>
-                  <h3 className="font-display font-black text-lg">
-                    {destModal.item ? `Edit: ${destModal.item.name}` : "Create New Destination"}
-                  </h3>
-                  <span className="text-teal-lighter text-xs font-outfit uppercase tracking-wider">
-                    {destModal.item ? "Modifying existing location" : "Adding new tourist spot"}
-                  </span>
-                </div>
-              </div>
-              <button
-                onClick={() => setDestModal({ open: false })}
-                className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors"
-              >
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full max-h-[85vh] overflow-y-auto shadow-2xl border border-slate-200">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="font-extrabold text-slate-900 text-2xl">
+                {destModal.item ? "Edit Destination" : "Add Destination"}
+              </h3>
+              <button onClick={() => setDestModal({ open: false })} className="p-2 rounded-full hover:bg-slate-100 text-slate-400">
                 <X className="w-5 h-5" />
               </button>
             </div>
-
-            {/* Form */}
             <form
-              data-lenis-prevent
               onSubmit={(e) => {
                 e.preventDefault();
-                const f = e.target as HTMLFormElement;
+                const form = e.target as HTMLFormElement;
                 const data = {
-                  name: (f.elements.namedItem("name") as HTMLInputElement).value,
-                  tag: (f.elements.namedItem("tag") as HTMLSelectElement).value,
-                  img: (f.elements.namedItem("img") as HTMLInputElement).value,
-                  rating: (f.elements.namedItem("rating") as HTMLInputElement).value,
-                  distance: (f.elements.namedItem("distance") as HTMLInputElement).value,
-                  duration: (f.elements.namedItem("duration") as HTMLInputElement).value,
-                  desc: (f.elements.namedItem("desc") as HTMLTextAreaElement).value,
+                  name: (form.elements.namedItem("name") as HTMLInputElement).value,
+                  tag: (form.elements.namedItem("tag") as HTMLSelectElement).value,
+                  rating: (form.elements.namedItem("rating") as HTMLInputElement).value,
+                  distance: (form.elements.namedItem("distance") as HTMLInputElement).value,
+                  duration: (form.elements.namedItem("duration") as HTMLInputElement).value,
+                  img: destImg || (form.elements.namedItem("img") as HTMLInputElement).value,
+                  desc: (form.elements.namedItem("desc") as HTMLTextAreaElement).value,
                 };
-
                 if (destModal.item) {
                   updateDestination(destModal.item.id, data);
-                  showToast("Destination updated!");
+                  showToast("Destination updated");
                 } else {
                   addDestination(data);
-                  showToast("Destination added!");
+                  showToast("Destination added");
                 }
                 setDestModal({ open: false });
               }}
-              className="p-6 overflow-y-auto space-y-4 flex-1 overscroll-contain"
+              className="space-y-4"
             >
-              <div className="bg-teal-lighter/60 text-ocean-600 px-4 py-2.5 rounded-xl text-xs font-bold flex items-center justify-between border border-teal-DEFAULT/20">
-                <span>Editable Form — Change any value below and click Save</span>
-              </div>
-              {/* Image Preview Banner */}
-              <div className="relative h-32 rounded-2xl overflow-hidden bg-gray-100 border border-gray-200 flex items-center justify-center">
-                <Image
-                  src={destModal.item?.img || "/dest-casuarina.png"}
-                  alt="Preview"
-                  fill
-                  className="object-cover"
-                  onError={(e) => {
-                    (e.target as HTMLElement).style.display = "none";
-                  }}
-                />
-                <span className="relative z-10 bg-navy/80 text-white text-xs px-3 py-1.5 rounded-full font-bold backdrop-blur-sm">
-                  Live Image Preview
-                </span>
-              </div>
-
               <div>
-                <label className="form-label text-navy font-bold">
-                  Destination Name
-                </label>
-                <input name="name" defaultValue={destModal.item?.name} placeholder="e.g. Casuarina Beach" className="input-field" required />
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Name</label>
+                <input name="name" defaultValue={destModal.item?.name} required className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl font-semibold" />
               </div>
-
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="form-label text-navy font-bold">
-                    Tag Category
-                  </label>
-                  <select name="tag" defaultValue={destModal.item?.tag || "Beach"} className="input-field">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Category Tag</label>
+                  <select name="tag" defaultValue={destModal.item?.tag || "Beach"} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl font-semibold">
                     <option value="Beach">Beach</option>
                     <option value="Heritage">Heritage</option>
                     <option value="History">History</option>
@@ -817,429 +933,348 @@ export default function AdminPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="form-label text-navy font-bold">
-                    Rating (1.0 – 5.0)
-                  </label>
-                  <input name="rating" defaultValue={destModal.item?.rating || "4.9"} placeholder="4.9" className="input-field" required />
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Rating</label>
+                  <input name="rating" defaultValue={destModal.item?.rating || "4.9 ★"} required className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl font-semibold" />
                 </div>
               </div>
-
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="form-label text-navy font-bold">
-                    Distance from City
-                  </label>
-                  <input name="distance" defaultValue={destModal.item?.distance || "15 km"} placeholder="e.g. 14 km" className="input-field" required />
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Distance</label>
+                  <input name="distance" defaultValue={destModal.item?.distance} placeholder="e.g. 15 km" required className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl font-semibold" />
                 </div>
                 <div>
-                  <label className="form-label text-navy font-bold">
-                    Recommended Duration
-                  </label>
-                  <input name="duration" defaultValue={destModal.item?.duration || "Half Day"} placeholder="e.g. Half Day" className="input-field" required />
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Duration</label>
+                  <input name="duration" defaultValue={destModal.item?.duration} placeholder="e.g. Half Day" required className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl font-semibold" />
                 </div>
               </div>
 
-              <div>
-                <label className="form-label text-navy font-bold">
-                  Image Path / URL
-                </label>
-                <input name="img" defaultValue={destModal.item?.img || "/dest-casuarina.png"} placeholder="/dest-casuarina.png" className="input-field" required />
-              </div>
+              {/* Local Device Image Uploader */}
+              <ImageUploader value={destImg} onChange={setDestImg} name="img" label="Spot Image (Device Upload)" />
 
               <div>
-                <label className="form-label text-navy font-bold">
-                  Description
-                </label>
-                <textarea name="desc" defaultValue={destModal.item?.desc} placeholder="Write a brief overview of this location..." rows={3} className="input-field" required />
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Description</label>
+                <textarea name="desc" defaultValue={destModal.item?.desc} rows={3} required className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl font-semibold resize-none" />
               </div>
-
-              <div className="pt-2">
-                <button type="submit" className="btn-primary w-full py-4 rounded-2xl justify-center font-bold text-base shadow-ocean">
-                  {destModal.item ? "Save Destination Changes" : "Create Destination"}
-                </button>
-              </div>
+              <button type="submit" className="w-full py-4 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-extrabold shadow-lg shadow-blue-600/30">
+                Save Destination
+              </button>
             </form>
-          </motion.div>
+          </div>
         </div>
       )}
 
-      {/* 2. Experience Modal */}
+      {/* Experience Modal */}
       {expModal.open && (
-        <div data-lenis-prevent className="fixed inset-0 z-50 bg-navy/80 backdrop-blur-md flex items-center justify-center p-4">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 10 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            className="bg-white rounded-3xl max-w-xl w-full max-h-[85vh] overflow-hidden shadow-2xl border border-teal-light/40 flex flex-col"
-          >
-            {/* Header */}
-            <div className="bg-gradient-to-r from-navy via-ocean-600 to-teal-DEFAULT text-white px-6 py-5 flex items-center justify-between shrink-0">
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                  {expModal.item ? <Edit3 className="w-5 h-5 text-teal-light" /> : <Plus className="w-5 h-5 text-teal-light" />}
-                </div>
-                <div>
-                  <h3 className="font-display font-black text-lg">
-                    {expModal.item ? `Edit: ${expModal.item.title}` : "Create New Experience"}
-                  </h3>
-                  <span className="text-teal-lighter text-xs font-outfit uppercase tracking-wider">
-                    {expModal.item ? "Modifying experience parameters" : "Adding new activity"}
-                  </span>
-                </div>
-              </div>
-              <button
-                onClick={() => setExpModal({ open: false })}
-                className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors"
-              >
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full max-h-[85vh] overflow-y-auto shadow-2xl border border-slate-200">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="font-extrabold text-slate-900 text-2xl">
+                {expModal.item ? "Edit Experience" : "Add Experience"}
+              </h3>
+              <button onClick={() => setExpModal({ open: false })} className="p-2 rounded-full hover:bg-slate-100 text-slate-400">
                 <X className="w-5 h-5" />
               </button>
             </div>
-
-            {/* Form */}
             <form
-              data-lenis-prevent
               onSubmit={(e) => {
                 e.preventDefault();
-                const f = e.target as HTMLFormElement;
-                const highlightsStr = (f.elements.namedItem("highlights") as HTMLInputElement).value;
+                const form = e.target as HTMLFormElement;
                 const data = {
-                  title: (f.elements.namedItem("title") as HTMLInputElement).value,
-                  category: (f.elements.namedItem("category") as HTMLSelectElement).value,
-                  price: (f.elements.namedItem("price") as HTMLInputElement).value,
-                  duration: (f.elements.namedItem("duration") as HTMLInputElement).value,
-                  groupSize: (f.elements.namedItem("groupSize") as HTMLInputElement).value,
-                  rating: (f.elements.namedItem("rating") as HTMLInputElement).value,
-                  img: (f.elements.namedItem("img") as HTMLInputElement).value,
-                  desc: (f.elements.namedItem("desc") as HTMLTextAreaElement).value,
-                  highlights: highlightsStr.split(",").map((s) => s.trim()).filter(Boolean),
+                  title: (form.elements.namedItem("title") as HTMLInputElement).value,
+                  category: (form.elements.namedItem("category") as HTMLSelectElement).value,
+                  price: (form.elements.namedItem("price") as HTMLInputElement).value,
+                  rating: (form.elements.namedItem("rating") as HTMLInputElement).value,
+                  duration: (form.elements.namedItem("duration") as HTMLInputElement).value,
+                  groupSize: (form.elements.namedItem("groupSize") as HTMLInputElement).value,
+                  img: expImg || (form.elements.namedItem("img") as HTMLInputElement).value,
+                  desc: (form.elements.namedItem("desc") as HTMLTextAreaElement).value,
+                  highlights: (form.elements.namedItem("highlights") as HTMLInputElement).value.split(",").map(s => s.trim()).filter(Boolean),
                 };
-
                 if (expModal.item) {
                   updateExperience(expModal.item.id, data);
-                  showToast("Experience updated!");
+                  showToast("Experience updated");
                 } else {
                   addExperience(data);
-                  showToast("Experience added!");
+                  showToast("Experience added");
                 }
                 setExpModal({ open: false });
               }}
-              className="p-6 overflow-y-auto space-y-4 flex-1 overscroll-contain"
+              className="space-y-4"
             >
               <div>
-                <label className="form-label text-navy font-bold">
-                  Experience Title
-                </label>
-                <input name="title" defaultValue={expModal.item?.title} placeholder="e.g. Sunset Island Cruise" className="input-field" required />
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Title</label>
+                <input name="title" defaultValue={expModal.item?.title} required className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl font-semibold" />
               </div>
-
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="form-label text-navy font-bold">
-                    Category
-                  </label>
-                  <select name="category" defaultValue={expModal.item?.category || "Adventure"} className="input-field">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Category</label>
+                  <select name="category" defaultValue={expModal.item?.category || "Adventure"} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl font-semibold">
                     <option value="Adventure">Adventure</option>
-                    <option value="Culture">Culture</option>
                     <option value="Food">Food</option>
-                    <option value="Nature">Nature</option>
+                    <option value="Culture">Culture</option>
                   </select>
                 </div>
                 <div>
-                  <label className="form-label text-navy font-bold">
-                    Price Tag
-                  </label>
-                  <input name="price" defaultValue={expModal.item?.price || "From $35"} placeholder="e.g. From $35" className="input-field" required />
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Price</label>
+                  <input name="price" defaultValue={expModal.item?.price || "LKR 15,000"} required className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl font-semibold" />
                 </div>
               </div>
-
               <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <label className="form-label text-navy font-bold">
-                    Duration
-                  </label>
-                  <input name="duration" defaultValue={expModal.item?.duration || "3-4 Hours"} placeholder="3 Hours" className="input-field" required />
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Rating</label>
+                  <input name="rating" defaultValue={expModal.item?.rating || "4.9 ★"} required className="w-full px-3 py-3 bg-slate-50 border border-slate-200 rounded-2xl font-semibold" />
                 </div>
                 <div>
-                  <label className="form-label text-navy font-bold">
-                    Group
-                  </label>
-                  <input name="groupSize" defaultValue={expModal.item?.groupSize || "2-8 people"} placeholder="2-8 people" className="input-field" required />
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Duration</label>
+                  <input name="duration" defaultValue={expModal.item?.duration || "3 Hours"} required className="w-full px-3 py-3 bg-slate-50 border border-slate-200 rounded-2xl font-semibold" />
                 </div>
                 <div>
-                  <label className="form-label text-navy font-bold">
-                    Rating
-                  </label>
-                  <input name="rating" defaultValue={expModal.item?.rating || "4.9"} placeholder="4.9" className="input-field" required />
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Group Size</label>
+                  <input name="groupSize" defaultValue={expModal.item?.groupSize || "1-8 People"} required className="w-full px-3 py-3 bg-slate-50 border border-slate-200 rounded-2xl font-semibold" />
                 </div>
               </div>
 
-              <div>
-                <label className="form-label text-navy font-bold">
-                  Image Path / URL
-                </label>
-                <input name="img" defaultValue={expModal.item?.img || "/exp-watersports.png"} placeholder="/exp-watersports.png" className="input-field" required />
-              </div>
+              {/* Local Device Image Uploader */}
+              <ImageUploader value={expImg} onChange={setExpImg} name="img" label="Experience Image (Device Upload)" />
 
               <div>
-                <label className="form-label text-navy font-bold">
-                  Description
-                </label>
-                <textarea name="desc" defaultValue={expModal.item?.desc} placeholder="Describe the experience details..." rows={3} className="input-field" required />
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Highlights (comma separated)</label>
+                <input name="highlights" defaultValue={expModal.item?.highlights.join(", ")} placeholder="Sunset views, Private boat, Refreshments" required className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl font-semibold" />
               </div>
-
               <div>
-                <label className="form-label text-navy font-bold">
-                  Highlights (comma separated)
-                </label>
-                <input name="highlights" defaultValue={expModal.item?.highlights.join(", ")} placeholder="Guide included, Snorkeling gear, Refreshments" className="input-field" required />
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Description</label>
+                <textarea name="desc" defaultValue={expModal.item?.desc} rows={3} required className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl font-semibold resize-none" />
               </div>
-
-              <div className="pt-2">
-                <button type="submit" className="btn-primary w-full py-4 rounded-2xl justify-center font-bold text-base shadow-ocean">
-                  {expModal.item ? "Save Experience Changes" : "Create Experience"}
-                </button>
-              </div>
+              <button type="submit" className="w-full py-4 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-extrabold shadow-lg shadow-blue-600/30">
+                Save Experience
+              </button>
             </form>
-          </motion.div>
+          </div>
         </div>
       )}
 
-      {/* 3. Package Modal */}
+      {/* Package Modal */}
       {pkgModal.open && (
-        <div data-lenis-prevent className="fixed inset-0 z-50 bg-navy/80 backdrop-blur-md flex items-center justify-center p-4">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 10 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            className="bg-white rounded-3xl max-w-xl w-full max-h-[85vh] overflow-hidden shadow-2xl border border-teal-light/40 flex flex-col"
-          >
-            {/* Header */}
-            <div className="bg-gradient-to-r from-navy via-ocean-600 to-teal-DEFAULT text-white px-6 py-5 flex items-center justify-between shrink-0">
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                  {pkgModal.item ? <Edit3 className="w-5 h-5 text-teal-light" /> : <Plus className="w-5 h-5 text-teal-light" />}
-                </div>
-                <div>
-                  <h3 className="font-display font-black text-lg">
-                    {pkgModal.item ? `Edit: ${pkgModal.item.name}` : "Create Tour Package"}
-                  </h3>
-                  <span className="text-teal-lighter text-xs font-outfit uppercase tracking-wider">
-                    {pkgModal.item ? "Modifying tour itinerary and pricing" : "Adding new package tier"}
-                  </span>
-                </div>
-              </div>
-              <button
-                onClick={() => setPkgModal({ open: false })}
-                className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors"
-              >
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full max-h-[85vh] overflow-y-auto shadow-2xl border border-slate-200">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="font-extrabold text-slate-900 text-2xl">
+                {pkgModal.item ? "Edit Package" : "Add Package"}
+              </h3>
+              <button onClick={() => setPkgModal({ open: false })} className="p-2 rounded-full hover:bg-slate-100 text-slate-400">
                 <X className="w-5 h-5" />
               </button>
             </div>
-
-            {/* Form */}
             <form
-              data-lenis-prevent
               onSubmit={(e) => {
                 e.preventDefault();
-                const f = e.target as HTMLFormElement;
+                const form = e.target as HTMLFormElement;
                 const data = {
-                  name: (f.elements.namedItem("name") as HTMLInputElement).value,
-                  subtitle: (f.elements.namedItem("subtitle") as HTMLInputElement).value,
-                  price: (f.elements.namedItem("price") as HTMLInputElement).value,
-                  duration: (f.elements.namedItem("duration") as HTMLInputElement).value,
-                  img: (f.elements.namedItem("img") as HTMLInputElement).value,
-                  featured: (f.elements.namedItem("featured") as HTMLInputElement).checked,
-                  features: pkgFeatures.map(s => s.trim()).filter(Boolean),
+                  name: (form.elements.namedItem("name") as HTMLInputElement).value,
+                  subtitle: (form.elements.namedItem("subtitle") as HTMLInputElement).value,
+                  price: (form.elements.namedItem("price") as HTMLInputElement).value,
+                  duration: (form.elements.namedItem("duration") as HTMLInputElement).value,
+                  img: pkgImg || (form.elements.namedItem("img") as HTMLInputElement).value,
+                  featured: (form.elements.namedItem("featured") as HTMLInputElement).checked,
+                  features: pkgFeatures,
                 };
-
                 if (pkgModal.item) {
                   updatePackage(pkgModal.item.id, data);
-                  showToast("Package updated!");
+                  showToast("Package updated");
                 } else {
                   addPackage(data);
-                  showToast("Package added!");
+                  showToast("Package added");
                 }
                 setPkgModal({ open: false });
               }}
-              className="p-6 overflow-y-auto space-y-4 flex-1 overscroll-contain"
+              className="space-y-4"
             >
-              <div className="bg-teal-lighter/60 text-ocean-600 px-4 py-2.5 rounded-xl text-xs font-bold flex items-center justify-between border border-teal-DEFAULT/20">
-                <span>Editable Form — Change any value below and click Save</span>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="form-label text-navy font-bold">
-                    Package Name
-                  </label>
-                  <input name="name" defaultValue={pkgModal.item?.name} placeholder="e.g. Voyager" className="input-field" required />
-                </div>
-                <div>
-                  <label className="form-label text-navy font-bold">
-                    Price (e.g. $299)
-                  </label>
-                  <input name="price" defaultValue={pkgModal.item?.price || "$299"} placeholder="$299" className="input-field" required />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="form-label text-navy font-bold">
-                    Subtitle Tagline
-                  </label>
-                  <input name="subtitle" defaultValue={pkgModal.item?.subtitle || "Most popular choice"} placeholder="Most popular choice" className="input-field" required />
-                </div>
-                <div>
-                  <label className="form-label text-navy font-bold">
-                    Duration
-                  </label>
-                  <input name="duration" defaultValue={pkgModal.item?.duration || "5 Days / 4 Nights"} placeholder="5 Days / 4 Nights" className="input-field" required />
-                </div>
-              </div>
-
               <div>
-                <label className="form-label text-navy font-bold">
-                  Image Path / URL
-                </label>
-                <input name="img" defaultValue={pkgModal.item?.img || "/dest-casuarina.png"} placeholder="/dest-casuarina.png" className="input-field" required />
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Package Name</label>
+                <input name="name" defaultValue={pkgModal.item?.name} required className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl font-semibold" />
               </div>
-
-              <div className="flex items-center gap-3 p-3 bg-teal-lighter/50 rounded-xl border border-teal-light/40">
-                <input type="checkbox" id="featured" name="featured" defaultChecked={pkgModal.item?.featured} className="w-5 h-5 rounded text-teal-DEFAULT focus:ring-teal-DEFAULT cursor-pointer" />
-                <label htmlFor="featured" className="text-navy text-xs font-bold cursor-pointer">
-                  Mark as Featured Package (Displays prominent badge on site)
-                </label>
-              </div>
-
-              {/* Dynamic Features List */}
-              <div className="p-4 bg-gray-50 rounded-2xl border border-gray-200">
-                <div className="flex items-center justify-between mb-3">
-                  <label className="form-label text-navy font-bold mb-0">
-                    Package Features ({pkgFeatures.length})
-                  </label>
-                  <button
-                    type="button"
-                    onClick={() => setPkgFeatures([...pkgFeatures, ""])}
-                    className="text-xs font-bold text-ocean-600 hover:text-navy flex items-center gap-1.5 bg-teal-lighter px-3 py-1.5 rounded-xl border border-teal-DEFAULT/30 hover:bg-teal-DEFAULT hover:text-white transition-all shadow-sm"
-                  >
-                    <Plus className="w-3.5 h-3.5" /> Add Feature Line
-                  </button>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Subtitle</label>
+                  <input name="subtitle" defaultValue={pkgModal.item?.subtitle || "3 Days / 2 Nights"} required className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl font-semibold" />
                 </div>
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Price</label>
+                  <input name="price" defaultValue={pkgModal.item?.price || "LKR 60,000"} required className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl font-semibold" />
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Duration text</label>
+                <input name="duration" defaultValue={pkgModal.item?.duration || "Includes Hotel + Transport"} required className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl font-semibold" />
+              </div>
 
-                <div className="space-y-2.5 max-h-56 overflow-y-auto pr-1">
+              {/* Local Device Image Uploader */}
+              <ImageUploader value={pkgImg} onChange={setPkgImg} name="img" label="Package Banner Image (Device Upload)" />
+
+              <div className="flex items-center gap-2 pt-2">
+                <input type="checkbox" id="pkg-featured" name="featured" defaultChecked={pkgModal.item?.featured} className="w-4 h-4 text-blue-600 rounded" />
+                <label htmlFor="pkg-featured" className="text-sm font-bold text-slate-900 cursor-pointer">Mark as Featured</label>
+              </div>
+
+              <div className="pt-2">
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">Features List</label>
+                <div className="space-y-2 mb-3">
                   {pkgFeatures.map((feat, idx) => (
                     <div key={idx} className="flex items-center gap-2">
-                      <span className="text-xs font-bold text-gray-400 w-5 text-center">{idx + 1}.</span>
                       <input
-                        type="text"
                         value={feat}
                         onChange={(e) => {
                           const updated = [...pkgFeatures];
                           updated[idx] = e.target.value;
                           setPkgFeatures(updated);
                         }}
-                        placeholder={`e.g. ${idx === 0 ? "Casuarina Beach visit" : "Hotel accommodation"}`}
-                        className="input-field py-2 text-xs font-medium flex-1"
-                        required
+                        className="flex-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold"
                       />
-                      {pkgFeatures.length > 1 && (
-                        <button
-                          type="button"
-                          onClick={() => setPkgFeatures(pkgFeatures.filter((_, i) => i !== idx))}
-                          className="p-2 rounded-xl text-rose-500 hover:bg-rose-100 transition-colors shrink-0"
-                          title="Remove feature"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      )}
+                      <button
+                        type="button"
+                        onClick={() => setPkgFeatures(pkgFeatures.filter((_, i) => i !== idx))}
+                        className="p-2 text-rose-500 hover:bg-rose-50 rounded-xl"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
                     </div>
                   ))}
                 </div>
-              </div>
-
-              <div className="pt-2">
-                <button type="submit" className="btn-primary w-full py-4 rounded-2xl justify-center font-bold text-base shadow-ocean">
-                  {pkgModal.item ? "Save Package Changes" : "Create Tour Package"}
+                <button
+                  type="button"
+                  onClick={() => setPkgFeatures([...pkgFeatures, "New Feature"])}
+                  className="text-xs font-bold text-blue-600 bg-blue-50 px-3 py-2 rounded-xl flex items-center gap-1"
+                >
+                  <Plus className="w-3.5 h-3.5" /> Add Feature Item
                 </button>
               </div>
+
+              <button type="submit" className="w-full py-4 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-extrabold shadow-lg shadow-blue-600/30 mt-2">
+                Save Package
+              </button>
             </form>
-          </motion.div>
+          </div>
         </div>
       )}
 
-      {/* 4. Gallery Modal */}
+      {/* Photo Modal */}
       {galModal.open && (
-        <div data-lenis-prevent className="fixed inset-0 z-50 bg-navy/80 backdrop-blur-md flex items-center justify-center p-4">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 10 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            className="bg-white rounded-3xl max-w-md w-full overflow-hidden shadow-2xl border border-teal-light/40 flex flex-col max-h-[85vh]"
-          >
-            <div className="bg-gradient-to-r from-navy via-ocean-600 to-teal-DEFAULT text-white px-6 py-5 flex items-center justify-between shrink-0">
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                  <Plus className="w-5 h-5 text-teal-light" />
-                </div>
-                <div>
-                  <h3 className="font-display font-black text-lg">Add Photo to Gallery</h3>
-                  <span className="text-teal-lighter text-xs font-outfit uppercase tracking-wider">
-                    Adding new image
-                  </span>
-                </div>
-              </div>
-              <button onClick={() => setGalModal({ open: false })} className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors">
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl border border-slate-200">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="font-extrabold text-slate-900 text-2xl">Add Photo</h3>
+              <button onClick={() => setGalModal({ open: false })} className="p-2 rounded-full hover:bg-slate-100 text-slate-400">
                 <X className="w-5 h-5" />
               </button>
             </div>
-
             <form
-              data-lenis-prevent
               onSubmit={(e) => {
                 e.preventDefault();
-                const f = e.target as HTMLFormElement;
+                const form = e.target as HTMLFormElement;
                 addGalleryItem({
-                  src: (f.elements.namedItem("src") as HTMLInputElement).value,
-                  alt: (f.elements.namedItem("alt") as HTMLInputElement).value,
-                  tag: (f.elements.namedItem("tag") as HTMLSelectElement).value,
+                  src: galImg || (form.elements.namedItem("src") as HTMLInputElement).value,
+                  alt: (form.elements.namedItem("alt") as HTMLInputElement).value,
+                  tag: (form.elements.namedItem("tag") as HTMLSelectElement).value,
+                  span: "col-span-1 row-span-1",
                 });
-                showToast("Photo added to gallery!");
+                showToast("Photo added");
                 setGalModal({ open: false });
               }}
-              className="p-6 space-y-4 overflow-y-auto flex-1 overscroll-contain"
+              className="space-y-4"
             >
+              {/* Local Device Image Uploader */}
+              <ImageUploader value={galImg} onChange={setGalImg} name="src" label="Select Photo from Device" />
+
               <div>
-                <label className="form-label text-navy font-bold">
-                  Image Path / URL
-                </label>
-                <input name="src" placeholder="/hero.png or https://..." className="input-field" required />
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Title / Caption</label>
+                <input name="alt" placeholder="Casuarina Beach Sunset" required className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl font-semibold" />
               </div>
               <div>
-                <label className="form-label text-navy font-bold">
-                  Caption / Description
-                </label>
-                <input name="alt" placeholder="Casuarina Beach Sunset View" className="input-field" required />
-              </div>
-              <div>
-                <label className="form-label text-navy font-bold">
-                  Tag Category
-                </label>
-                <select name="tag" className="input-field">
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Tag</label>
+                <select name="tag" defaultValue="Beach" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl font-semibold">
                   <option value="Beach">Beach</option>
                   <option value="Heritage">Heritage</option>
                   <option value="History">History</option>
                   <option value="Nature">Nature</option>
                   <option value="Culture">Culture</option>
                   <option value="Adventure">Adventure</option>
-                  <option value="Experiences">Experiences</option>
                 </select>
               </div>
-
-              <div className="pt-2">
-                <button type="submit" className="btn-primary w-full py-4 rounded-2xl justify-center font-bold text-base shadow-ocean">
-                  Add Photo to Gallery
-                </button>
-              </div>
+              <button type="submit" className="w-full py-4 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-extrabold shadow-lg shadow-blue-600/30">
+                Upload Photo
+              </button>
             </form>
-          </motion.div>
+          </div>
         </div>
       )}
+
+      {/* ── FLOATING MOBILE BOTTOM NAVIGATION DOCK (DARK GLASS STYLE) ── */}
+      <div className="md:hidden fixed bottom-3 left-3 right-3 z-40 bg-slate-950/95 backdrop-blur-2xl border border-slate-800 rounded-2xl p-2 flex items-center justify-around shadow-2xl">
+        <button
+          onClick={() => setActiveTab("bookings")}
+          className={`relative flex flex-col items-center gap-1 p-2 rounded-xl text-xs font-bold transition-all ${
+            activeTab === "bookings" ? "bg-blue-600 text-white" : "text-slate-400 hover:text-slate-200"
+          }`}
+        >
+          <Calendar className="w-5 h-5" />
+          <span className="text-[0.65rem]">Bookings</span>
+          {pendingCount > 0 && (
+            <span className="absolute -top-1 -right-1 px-1.5 py-0.5 text-[0.6rem] font-black bg-rose-500 text-white rounded-full animate-bounce">
+              {pendingCount}
+            </span>
+          )}
+        </button>
+
+        <button
+          onClick={() => setActiveTab("destinations")}
+          className={`flex flex-col items-center gap-1 p-2 rounded-xl text-xs font-bold transition-all ${
+            activeTab === "destinations" ? "bg-blue-600 text-white" : "text-slate-400 hover:text-slate-200"
+          }`}
+        >
+          <MapPin className="w-5 h-5" />
+          <span className="text-[0.65rem]">Spots</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab("experiences")}
+          className={`flex flex-col items-center gap-1 p-2 rounded-xl text-xs font-bold transition-all ${
+            activeTab === "experiences" ? "bg-blue-600 text-white" : "text-slate-400 hover:text-slate-200"
+          }`}
+        >
+          <Compass className="w-5 h-5" />
+          <span className="text-[0.65rem]">Experiences</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab("packages")}
+          className={`flex flex-col items-center gap-1 p-2 rounded-xl text-xs font-bold transition-all ${
+            activeTab === "packages" ? "bg-blue-600 text-white" : "text-slate-400 hover:text-slate-200"
+          }`}
+        >
+          <PackageIcon className="w-5 h-5" />
+          <span className="text-[0.65rem]">Tours</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab("gallery")}
+          className={`flex flex-col items-center gap-1 p-2 rounded-xl text-xs font-bold transition-all ${
+            activeTab === "gallery" ? "bg-blue-600 text-white" : "text-slate-400 hover:text-slate-200"
+          }`}
+        >
+          <ImageIcon className="w-5 h-5" />
+          <span className="text-[0.65rem]">Photos</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab("contact")}
+          className={`flex flex-col items-center gap-1 p-2 rounded-xl text-xs font-bold transition-all ${
+            activeTab === "contact" ? "bg-blue-600 text-white" : "text-slate-400 hover:text-slate-200"
+          }`}
+        >
+          <Phone className="w-5 h-5" />
+          <span className="text-[0.65rem]">Agency</span>
+        </button>
+      </div>
     </div>
   );
 }

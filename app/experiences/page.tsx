@@ -2,18 +2,17 @@
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Waves, Utensils, Camera, Compass, Clock, Users, Star, ArrowRight } from "lucide-react";
+import { Waves, Utensils, Camera, Compass, Clock, Users, Star, ArrowRight, CheckCircle2 } from "lucide-react";
 import { useData } from "@/lib/DataContext";
 
-const fadeUp = {
-  hidden: { opacity: 0, y: 15 },
+const fadeInUp = {
+  hidden: { opacity: 0, y: 20 },
   visible: (i: number = 0) => ({
-    opacity: 1, y: 0,
-    transition: { delay: i * 0.05, duration: 0.6, ease: [0.16, 1, 0.3, 1] },
+    opacity: 1,
+    y: 0,
+    transition: { delay: i * 0.08, duration: 0.5, ease: [0.16, 1, 0.3, 1] },
   }),
 };
-
-
 
 const categoryIcons: Record<string, any> = {
   Adventure: Waves,
@@ -23,100 +22,136 @@ const categoryIcons: Record<string, any> = {
 
 export default function ExperiencesPage() {
   const { experiences } = useData();
+
   return (
-    <>
-      {/* Hero */}
-      <section className="relative pt-36 pb-28 overflow-hidden">
-        <div className="absolute inset-0">
-          <Image src="/exp-sunset.png" alt="Experiences" fill className="object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-b from-navy/80 via-coral/30 to-navy/70" />
+    <div className="min-h-screen bg-slate-50">
+      {/* ── HERO SECTION ── */}
+      <section className="relative pt-32 pb-20 bg-slate-900 overflow-hidden">
+        <div className="absolute inset-0 z-0">
+          <Image
+            src="/exp-sunset.png"
+            alt="Experiences"
+            fill
+            priority
+            className="object-cover object-center scale-105"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-900/70 to-slate-900/80" />
         </div>
+
         <div className="container-custom relative z-10 text-center">
-          <motion.div initial="hidden" animate="visible">
-            <motion.span variants={fadeUp} className="section-label text-sand">Curated Experiences</motion.span>
-            <motion.h1 variants={fadeUp} custom={1} className="font-display font-black text-white text-5xl md:text-7xl mt-3 mb-5">
-              Experiences
+          <motion.div initial="hidden" animate="visible" className="flex flex-col items-center">
+            <motion.div variants={fadeInUp} custom={0} className="hero-badge mb-4">
+              <Compass className="w-4 h-4 text-cyan-400" />
+              <span>Memories For Life</span>
+            </motion.div>
+            <motion.h1
+              variants={fadeInUp}
+              custom={1}
+              className="font-black text-white text-4xl sm:text-6xl tracking-tight mb-4"
+            >
+              Curated <span className="text-gradient-cyan">Experiences</span>
             </motion.h1>
-            <motion.p variants={fadeUp} custom={2} className="text-white/75 text-lg max-w-xl mx-auto leading-relaxed">
-              Every moment in Jaffna is an adventure. Dive into water, culture, cuisine, and unforgettable sunsets.
+            <motion.p
+              variants={fadeInUp}
+              custom={2}
+              className="text-slate-300 text-base sm:text-lg max-w-xl mx-auto leading-relaxed"
+            >
+              Immerse yourself in sunset catamaran cruises, seafood food trails, water sports, and sacred Kovil Poojas.
             </motion.p>
           </motion.div>
         </div>
-        <div className="absolute bottom-0 left-0 w-full overflow-hidden leading-[0]">
-          <svg viewBox="0 0 1440 60" className="w-full" preserveAspectRatio="none">
-            <path fill="#F8F9FA" d="M0,30 C360,60 1080,0 1440,30 L1440,60 L0,60 Z" />
-          </svg>
-        </div>
       </section>
 
-      {/* Experience Cards */}
-      <section className="py-16 bg-pearl">
+      {/* ── EXPERIENCES CARDS ── */}
+      <section className="py-20">
         <div className="container-custom space-y-12">
-          {experiences.map((exp, i) => (
-            <motion.div
-              key={exp.id}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, margin: "-60px" }}
-              variants={fadeUp}
-              custom={0}
-              className="bg-white rounded-3xl shadow-card overflow-hidden grid grid-cols-1 lg:grid-cols-2"
-            >
-              {/* Image side */}
-              <div className={`relative h-72 lg:h-auto min-h-[320px] img-zoom ${i % 2 === 1 ? "lg:order-2" : ""}`}>
-                <Image src={exp.img} alt={exp.title} fill className="object-cover" />
-                <div className={`absolute inset-0 bg-gradient-to-br ${exp.color} opacity-30`} />
-                <div className="absolute top-5 left-5">
-                  <span className={`badge bg-gradient-to-r ${exp.color} text-white border-0 shadow-lg`}>
-                    {(() => {
-                      const IconComp = categoryIcons[exp.category] || Compass;
-                      return <IconComp className="w-3.5 h-3.5" />;
-                    })()}
-                    {exp.category}
-                  </span>
-                </div>
-                <div className="absolute bottom-5 left-5 flex items-center gap-2 bg-white/90 backdrop-blur-sm rounded-full px-3 py-1.5">
-                  <Star className="w-4 h-4 fill-sand text-sand" />
-                  <span className="font-display font-bold text-navy text-sm">{exp.rating} Rating</span>
-                </div>
-              </div>
-
-              {/* Content side */}
-              <div className={`p-8 lg:p-12 flex flex-col justify-center ${i % 2 === 1 ? "lg:order-1" : ""}`}>
-                <h2 className="font-display font-black text-navy text-2xl md:text-3xl mb-4">{exp.title}</h2>
-                <p className="text-gray-500 leading-relaxed mb-6">{exp.desc}</p>
-
-                {/* Highlights */}
-                <div className="grid grid-cols-2 gap-2 mb-6">
-                  {exp.highlights.map((h) => (
-                    <div key={h} className="flex items-center gap-2 text-sm text-gray-600">
-                      <div className="w-1.5 h-1.5 rounded-full bg-teal-DEFAULT" />
-                      {h}
+          {experiences.length === 0 ? (
+            <div className="text-center py-16 bg-white rounded-3xl border border-slate-200 p-8 shadow-card">
+              <p className="text-slate-500 font-extrabold text-lg">No experiences are currently configured.</p>
+              <p className="text-slate-400 text-xs mt-1">Check back later or contact us to plan a customized tour.</p>
+            </div>
+          ) : (
+            experiences.map((exp, i) => {
+              const IconComp = categoryIcons[exp.category] || Compass;
+              return (
+                <motion.div
+                  key={exp.id}
+                  initial="hidden"
+                  whileInView="visible"
+                  viewport={{ once: true, margin: "-60px" }}
+                  variants={fadeInUp}
+                  custom={i}
+                  className="bg-white rounded-3xl shadow-card overflow-hidden border border-slate-200/80 grid grid-cols-1 lg:grid-cols-12 gap-0 card-hover-effect"
+                >
+                  {/* Photo Side (lg:col-span-5) */}
+                  <div className={`relative min-h-[300px] lg:h-auto lg:col-span-5 ${i % 2 === 1 ? "lg:order-2" : ""}`}>
+                    <Image src={exp.img} alt={exp.title} fill className="object-cover" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 to-transparent" />
+                    
+                    {/* Category Pill */}
+                    <div className="absolute top-5 left-5">
+                      <span className="bg-slate-900/80 backdrop-blur-md text-white font-bold text-xs px-3.5 py-1.5 rounded-full flex items-center gap-1.5 shadow-md">
+                        <IconComp className="w-3.5 h-3.5 text-cyan-400" />
+                        <span>{exp.category}</span>
+                      </span>
                     </div>
-                  ))}
-                </div>
 
-                {/* Meta */}
-                <div className="flex flex-wrap gap-4 mb-8 pt-6 border-t border-gray-50">
-                  <div className="flex items-center gap-2 text-sm text-gray-400">
-                    <Clock className="w-4 h-4 text-teal-DEFAULT" />
-                    {exp.duration}
+                    {/* Rating */}
+                    <div className="absolute bottom-5 left-5 bg-white/95 backdrop-blur-md text-slate-900 font-extrabold text-xs px-3.5 py-1.5 rounded-full flex items-center gap-1 shadow-md">
+                      <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
+                      <span>{exp.rating} Rating</span>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2 text-sm text-gray-400">
-                    <Users className="w-4 h-4 text-coral" />
-                    {exp.groupSize}
-                  </div>
-                  <div className="ml-auto font-display font-black text-ocean-500 text-xl">{exp.price}</div>
-                </div>
 
-                <Link href="/booking" id={`book-exp-${exp.id}`} className="btn-primary self-start">
-                  Book This Experience <ArrowRight className="w-4 h-4" />
-                </Link>
-              </div>
-            </motion.div>
-          ))}
+                  {/* Content Side (lg:col-span-7) */}
+                  <div className={`p-8 lg:p-12 lg:col-span-7 flex flex-col justify-between ${i % 2 === 1 ? "lg:order-1" : ""}`}>
+                    <div>
+                      <h2 className="font-extrabold text-slate-900 text-2xl sm:text-3xl mb-3">{exp.title}</h2>
+                      <p className="text-slate-500 text-base leading-relaxed mb-6">{exp.desc}</p>
+
+                      {/* Highlights */}
+                      <div className="grid grid-cols-2 gap-3 mb-8">
+                        {exp.highlights.map((h) => (
+                          <div key={h} className="flex items-center gap-2.5 text-sm text-slate-700 font-semibold">
+                            <CheckCircle2 className="w-4 h-4 text-cyan-500 shrink-0" />
+                            <span>{h}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Footer Meta & Action */}
+                    <div className="pt-6 border-t border-slate-100 flex flex-wrap items-center justify-between gap-4">
+                      <div className="flex items-center gap-4 text-xs font-semibold text-slate-500">
+                        <span className="flex items-center gap-1.5">
+                          <Clock className="w-4 h-4 text-blue-600" />
+                          {exp.duration}
+                        </span>
+                        <span className="flex items-center gap-1.5">
+                          <Users className="w-4 h-4 text-cyan-500" />
+                          {exp.groupSize}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-4">
+                        <span className="font-black text-slate-900 text-2xl">{exp.price}</span>
+                        <Link
+                          href="/booking"
+                          id={`book-exp-${exp.id}`}
+                          className="bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-sm px-6 py-3 rounded-full shadow-lg shadow-blue-600/25 flex items-center gap-2 transition-transform active:scale-95"
+                        >
+                          <span>Book Experience</span>
+                          <ArrowRight className="w-4 h-4" />
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })
+          )}
         </div>
       </section>
-    </>
+    </div>
   );
 }
