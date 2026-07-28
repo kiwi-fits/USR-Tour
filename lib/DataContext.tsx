@@ -331,7 +331,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
         await Promise.all(
           keys.map(async (item) => {
-            const res = await fetch(`/api/store/${item.key}`);
+            const res = await fetch(`/api/store/${item.key}`, { cache: 'no-store' });
             if (res.ok) {
               const data = await res.json();
               if (data && mounted) item.setter(data);
