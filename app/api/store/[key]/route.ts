@@ -1,4 +1,6 @@
 import { NextResponse } from 'next/server';
+import fs from 'fs/promises';
+import path from 'path';
 
 export const dynamic = 'force-dynamic';
 
@@ -31,23 +33,19 @@ export async function GET(request: Request, { params }: { params: { key: string 
       return NextResponse.json(data || null);
     } 
     
-    // 2. Local Development Fallback (when running `npm run dev`)
-    if (process.env.NODE_ENV === 'development') {
-      const fs = require('fs/promises');
-      const path = require('path');
-      const dbPath = path.join(process.cwd(), 'local-kv-db.json');
-      
-      try {
-        const fileContent = await fs.readFile(dbPath, 'utf-8');
-        const db = JSON.parse(fileContent);
-        return NextResponse.json(db[key] || null);
-      } catch (err: any) {
-        // If file doesn't exist, return null
-        if (err.code === 'ENOENT') {
-          return NextResponse.json(null);
-        }
-        throw err;
+    // 2. Local Development Fallback
+    // If KV binding is missing, try falling back to local filesystem (works locally, fails gracefully on Cloudflare)
+    const dbPath = path.join(process.cwd(), 'local-kv-db.json');
+    
+    try {
+      const fileContent = await fs.readFile(dbPath, 'utf-8');
+      const db = JSON.parse(fileContent);
+      return NextResponse.json(db[key] || null);
+    } catch (err: any) {
+      if (err.code === 'ENOENT') {
+        return NextResponse.json(null);
       }
+      throw err;
     }
 
     // Default if no binding and not local dev
@@ -88,25 +86,21 @@ export async function POST(request: Request, { params }: { params: { key: string
     }
     
     // 2. Local Development Fallback
-    if (process.env.NODE_ENV === 'development') {
-      const fs = require('fs/promises');
-      const path = require('path');
-      const dbPath = path.join(process.cwd(), 'local-kv-db.json');
-      
-      let db: Record<string, any> = {};
-      try {
-        const fileContent = await fs.readFile(dbPath, 'utf-8');
-        db = JSON.parse(fileContent);
-      } catch (err: any) {
-        // Ignore if file doesn't exist yet
-      }
-      
-      // Update key and write back to file
-      db[key] = body;
-      await fs.writeFile(dbPath, JSON.stringify(db, null, 2), 'utf-8');
-      
-      return NextResponse.json({ success: true });
+    const dbPath = path.join(process.cwd(), 'local-kv-db.json');
+    
+    let db: Record<string, any> = {};
+    try {
+      const fileContent = await fs.readFile(dbPath, 'utf-8');
+      db = JSON.parse(fileContent);
+    } catch (err: any) {
+      // Ignore if file doesn't exist yet
     }
+    
+    // Update key and write back to file
+    db[key] = body;
+    await fs.writeFile(dbPath, JSON.stringify(db, null, 2), 'utf-8');
+    
+    return NextResponse.json({ success: true });
     console.error("KV Binding TOURISM_KV not found in environment!");
     return NextResponse.json({ error: 'KV Binding not found' }, { status: 500 });
   } catch (error) {
