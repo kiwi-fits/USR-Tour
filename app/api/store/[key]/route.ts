@@ -51,7 +51,8 @@ export async function GET(request: Request, { params }: { params: { key: string 
     }
 
     // Default if no binding and not local dev
-    return NextResponse.json(null);
+    console.error("KV Binding TOURISM_KV not found in environment!");
+    return NextResponse.json({ error: 'KV Binding not found' }, { status: 500 });
   } catch (error) {
     console.error(`Error reading KV for key ${key}:`, error);
     return NextResponse.json({ error: 'Failed to read data' }, { status: 500 });
@@ -106,8 +107,8 @@ export async function POST(request: Request, { params }: { params: { key: string
       
       return NextResponse.json({ success: true });
     }
-    
-    return NextResponse.json({ success: true });
+    console.error("KV Binding TOURISM_KV not found in environment!");
+    return NextResponse.json({ error: 'KV Binding not found' }, { status: 500 });
   } catch (error) {
     console.error(`Error writing KV for key ${key}:`, error);
     return NextResponse.json({ error: 'Failed to write data' }, { status: 500 });

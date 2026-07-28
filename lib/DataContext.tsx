@@ -228,47 +228,7 @@ export const initialContact: ContactDetails = {
   hours: "Mon–Sat: 8am – 6pm LKT",
 };
 
-export const initialBookings: BookingRecord[] = [
-  {
-    id: "USR-BK-101",
-    packageName: "Voyager (5 Days / 4 Nights)",
-    packagePrice: "LKR 90,000",
-    fullName: "Ananya Sharma",
-    email: "ananya.sharma@example.com",
-    phone: "+91 98765 43210",
-    country: "India (Chennai)",
-    date: "2026-08-15",
-    guests: 2,
-    status: "Confirmed",
-    bookedAt: "2026-07-22 14:30",
-  },
-  {
-    id: "USR-BK-102",
-    packageName: "Prestige (7 Days / 6 Nights)",
-    packagePrice: "LKR 150,000",
-    fullName: "Rohan Patel",
-    email: "rohan.p@example.com",
-    phone: "+91 91234 56789",
-    country: "India (Mumbai)",
-    date: "2026-09-01",
-    guests: 4,
-    status: "Pending",
-    bookedAt: "2026-07-23 09:15",
-  },
-  {
-    id: "USR-BK-103",
-    packageName: "Explorer (3 Days / 2 Nights)",
-    packagePrice: "LKR 45,000",
-    fullName: "Karthik Raja",
-    email: "karthik.r@example.com",
-    phone: "+91 94444 12345",
-    country: "India (Bangalore)",
-    date: "2026-07-28",
-    guests: 1,
-    status: "Completed",
-    bookedAt: "2026-07-20 11:00",
-  },
-];
+export const initialBookings: BookingRecord[] = [];
 
 // ─── Context Interface ──────────────────────────────────────────────────────
 type DataContextType = {
